@@ -42,6 +42,19 @@ shingles = ks.shingleset_k("abc", k=3)
 # {'a', 'ab', 'abc', 'b', 'bc', 'c'}
 ```
 
+```py
+import kshingle as ks
+shingles = ks.shingleset_range("abc", 2, 3)
+# {'ab', 'abc', 'bc', 'c'}
+```
+
+```py
+import kshingle as ks
+shingles = ks.shingleset_list("abc", [1, 3])
+# {'a', 'abc', 'b', 'c'}
+```
+
+
 
 ## Appendix
 
