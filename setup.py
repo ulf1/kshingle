@@ -17,6 +17,8 @@ setup(name='kshingle',
       license='MIT',
       packages=['kshingle'],
       install_requires=[
-          'setuptools>=40.0.0'],
+          'setuptools>=40.0.0',
+          'numba>=0.52.0'
+      ],
       python_requires='>=3.6',
       zip_safe=False)
