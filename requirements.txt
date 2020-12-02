@@ -1,0 +1,6 @@
+# public packages (see setup.py)
+# numpy>=1.19.0
+# tensorflow>=2.2.0
+
+# private packages
+# -e git://github.com:ulf1/mycoolpkg.git#egg=mycoolpkg

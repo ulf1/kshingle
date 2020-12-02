@@ -1,0 +1,3 @@
+# packages required to run example notebooks
+jupyterlab>=2.2.9
+# matplotlib>=3.3.2
