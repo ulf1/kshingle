@@ -6,17 +6,17 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 
-setup(name='template_pypi',
+setup(name='kshingle',
       version='0.1.0',
-      description='lorem ipsum',
+      description='lSplit strings into (character-based) k-shingles',
       long_description=read('README.md'),
       long_description_content_type='text/markdown',
-      url='http://github.com/myorg/template_pypi',
-      author='John Doe',
+      url='http://github.com/ulf1/kshingle',
+      author='Ulf Hamster',
       author_email='554c46@gmail.com',
       license='MIT',
-      packages=['template_pypi'],
+      packages=['kshingle'],
       install_requires=[
           'setuptools>=40.0.0'],
-      python_requires='>=3.8',
+      python_requires='>=3.6',
       zip_safe=False)
