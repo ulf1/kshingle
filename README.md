@@ -32,6 +32,17 @@ shingles = ks.shingling_list("aBc DeF", klist=[2, 5])
 #  ['aBc D', 'Bc De', 'c DeF']]
 ```
 
+
+### Generate Shingle Sets
+For algorithms like MinHash (e.g. [datasketch](https://github.com/ekzhu/datasketch) package) a document (i.e. a string) must be split into a set of unique shingles.
+
+```py
+import kshingle as ks
+shingles = ks.shingleset_k("abc", k=3)
+# {'a', 'ab', 'abc', 'b', 'bc', 'c'}
+```
+
+
 ## Appendix
 
 ### Installation
