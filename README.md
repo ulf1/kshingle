@@ -3,6 +3,35 @@ Utility functions to split a string into (character-based) k-shingles, shingle s
 
 ## Usage
 
+### Convert a string to a sequences of shingles
+Using the `k` parameter
+
+```py
+import kshingle as ks
+shingles = ks.shingling_k("aBc DeF", k=3)
+# [['a', 'B', 'c', ' ', 'D', 'e', 'F'],
+#  ['aB', 'Bc', 'c ', ' D', 'De', 'eF'],
+#  ['aBc', 'Bc ', 'c D', ' De', 'DeF']]
+```
+
+Using a range for `k`
+
+```py
+import kshingle as ks
+shingles = ks.shingling_range("aBc DeF", n_min=2, n_max=3)
+# [['aB', 'Bc', 'c ', ' D', 'De', 'eF'],
+#  ['aBc', 'Bc ', 'c D', ' De', 'DeF']]
+```
+
+Using a specific list of k values
+
+```py
+import kshingle as ks
+shingles = ks.shingling_list("aBc DeF", klist=[2, 5])
+# [['aB', 'Bc', 'c ', ' D', 'De', 'eF'],
+#  ['aBc D', 'Bc De', 'c DeF']]
+```
+
 ## Appendix
 
 ### Installation
