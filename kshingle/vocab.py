@@ -83,6 +83,27 @@ def identify_vocab(shingled: List[List[str]],
 def upsert_word_to_vocab(VOCAB: List[str], word: str) -> (List[str], int):
     """Upsert a word to to vocabulary, and return new vocabulary list
         as well as the word's index
+
+    VOCAB : List[str]
+        vocabulary list
+
+    word : str
+        new to word to insert, or existing word word to lookup
+
+    Return:
+    -------
+    List[str]
+        Upldated VOCAB
+
+    int
+        Index of word
+
+    Example:
+    --------
+        import kshingle as ks
+        VOCAB = ['a', 'b']
+        VOCAB, idx = ks.upsert_word_to_vocab(VOCAB, "[UNK]")
+        print(idx, VOCAB)
     """
     try:
         idx = VOCAB.index(word)
