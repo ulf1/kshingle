@@ -7,7 +7,7 @@ def read(fname):
 
 
 setup(name='kshingle',
-      version='0.2.0',
+      version='0.3.0',
       description='lSplit strings into (character-based) k-shingles',
       long_description=read('README.md'),
       long_description_content_type='text/markdown',
