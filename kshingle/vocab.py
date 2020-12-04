@@ -185,6 +185,6 @@ def shrink_k_backwards(encoded: List[List[int]], unkid: int) -> List[int]:
     k = len(encoded[0])
     klist = []
     for j in range(k):
-        if not all([all([elem==unkid for elem in ex[j]]) for ex in encoded]):
+        if not all([all([elem == unkid for elem in ex[j]]) for ex in encoded]):
             klist.append(j + 1)
     return klist
