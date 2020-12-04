@@ -137,7 +137,7 @@ import kshingle as ks
 VOCAB, padidx = ks.upsert_word_to_vocab(VOCAB, "[PAD]")
 
 # Pad each example with Keras
-cfg = {'maxlen': 150, 'dtype': 'int32', 'padding': 'pre', 'truncating': 'pre', 'value': padid}
+cfg = {'maxlen': 150, 'dtype': 'int32', 'padding': 'pre', 'truncating': 'pre', 'value': padidx}
 padded = [pad_sequences(ex, **cfg).transpose() for ex in encoded]
 
 # Convert to Pytorch
