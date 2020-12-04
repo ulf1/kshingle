@@ -140,7 +140,7 @@ def encoded_with_vocab(x: Union[list, str], VOCAB: List[str],
         shingled = [ks.shingling_k(s, k=9) for s in data]
         VOCAB = ks.identify_vocab(shingled, n_max_vocab=10)
         VOCAB, unkid = ks.upsert_word_to_vocab(VOCAB, "[UNK]")
-        encoded = encoded_with_vocab(shingled, VOCAB, unkid)
+        encoded = ks.encoded_with_vocab(shingled, VOCAB, unkid)
     """
     if isinstance(x, str):
         try:
@@ -175,7 +175,7 @@ def shrink_k_backwards(encoded: List[List[int]], unkid: int) -> List[int]:
         shingled = [ks.shingling_k(s, k=9) for s in data]
         VOCAB = ks.identify_vocab(shingled, n_max_vocab=10)
         VOCAB, unkid = ks.upsert_word_to_vocab(VOCAB, "[UNK]")
-        encoded = encoded_with_vocab(shingled, VOCAB, unkid)
+        encoded = ks.encoded_with_vocab(shingled, VOCAB, unkid)
         # Identify k's that are actually used
         klist = ks.shrink_k_backwards(encoded, unkid)
         # Step 2: Shingle sequences again

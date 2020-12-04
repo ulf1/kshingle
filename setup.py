@@ -8,7 +8,7 @@ def get_readme():
 
 
 setup(name='kshingle',
-      version='0.4.0',
+      version='0.4.1',
       description="Split strings into (character-based) k-shingles",
       long_description=get_readme(),
       long_description_content_type='text/x-rst',

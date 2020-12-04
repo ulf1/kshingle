@@ -3,6 +3,12 @@ Utility functions to split a string into (character-based) k-shingles, shingle s
 
 ## Usage
 
+### Install
+
+```sh
+pip install kshingle>=0.4.1
+```
+
 ### Convert a string to a sequences of shingles
 Using the `k` parameter
 
@@ -115,7 +121,7 @@ data = ['abc d abc de abc def', 'abc defg abc def gh abc def ghi']
 shingled = [ks.shingling_k(s, k=9) for s in data]
 VOCAB = ks.identify_vocab(shingled, n_max_vocab=10)
 VOCAB, unkid = ks.upsert_word_to_vocab(VOCAB, "[UNK]")
-encoded = encoded_with_vocab(shingled, VOCAB, unkid)
+encoded = ks.encoded_with_vocab(shingled, VOCAB, unkid)
 # Identify k's that are actually used
 klist = ks.shrink_k_backwards(encoded, unkid)
 
