@@ -55,7 +55,7 @@ shingles = ks.shingleset_list("abc", [1, 3])
 ```
 
 
-### Identifiy Vocabulary for Shingles
+### Identify Vocabulary of unique shingles
 
 ```py
 import kshingle as ks
