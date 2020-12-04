@@ -1,3 +1,6 @@
+# 0.4.0 / 2020-12-04
+
+  * Encode shingle sequences to ID sequences
 
 # 0.3.0 / 2020-12-04
 

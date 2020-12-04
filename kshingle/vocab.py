@@ -78,3 +78,16 @@ def identify_vocab(shingled: List[List[str]],
         voc = voc[:n_max_vocab]
 
     return voc
+
+
+def upsert_word_to_vocab(VOCAB: List[str], word: str) -> (List[str], int):
+    """Upsert a word to to vocabulary, and return new vocabulary list
+        as well as the word's index
+    """
+    try:
+        idx = VOCAB.index(word)
+    except:
+        VOCAB.append(word)
+        idx = VOCAB.index(word)
+    return VOCAB, idx
+

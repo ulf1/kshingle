@@ -70,6 +70,23 @@ VOCAB = ks.identify_vocab(
 print(VOCAB)
 ```
 
+### Upsert a word to VOCAB
+
+```py
+import kshingle as ks
+VOCAB = ['a', 'b']
+
+# insert because "[UNK]" doesn't exist
+VOCAB, idx = ks.upsert_word_to_vocab(VOCAB, "[UNK]")
+print(idx, VOCAB)
+# 2 ['a', 'b', '[UNK]']
+
+# don't insert because "[UNK]" already exists
+VOCAB, idx = ks.upsert_word_to_vocab(VOCAB, "[UNK]")
+print(idx, VOCAB)
+# 2 ['a', 'b', '[UNK]']
+```
+
 
 ## Appendix
 
