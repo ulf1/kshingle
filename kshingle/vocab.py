@@ -149,3 +149,42 @@ def encoded_with_vocab(x: Union[list, str], VOCAB: List[str],
             return unkid
     else:
         return [encoded_with_vocab(e, VOCAB, unkid) for e in x]
+
+
+def shrink_k_backwards(encoded: List[List[int]], unkid: int) -> List[int]:
+    """Find k-th sequences that only contain UNKIDs to exclude them. Return
+        a list of k's that contain at least one encoded shingle across
+        all examples.
+
+    encoded: List[List[int]]
+
+    unkid : int
+        Index of the UKNOWN token, e.g. unkid=VOCAB.index("[UNK]")
+
+    Return:
+    -------
+    klist : List[int]
+        A list of k's that contain at least one encoded shingle across
+          all examples.
+
+    Example:
+    --------
+        import kshingle as ks
+        data = ['abc d abc de abc def', 'abc defg abc def gh abc def ghi']
+        # Step 1: Build a VOCAB
+        shingled = [ks.shingling_k(s, k=9) for s in data]
+        VOCAB = ks.identify_vocab(shingled, n_max_vocab=10)
+        VOCAB, unkid = ks.upsert_word_to_vocab(VOCAB, "[UNK]")
+        encoded = encoded_with_vocab(shingled, VOCAB, unkid)
+        # Identify k's that are actually used
+        klist = ks.shrink_k_backwards(encoded, unkid)
+        # Step 2: Shingle sequences again
+        shingled = [ks.shingling_list(s, klist=klist) for s in data]
+        ...
+    """
+    k = len(encoded[0])
+    klist = []
+    for j in range(k):
+        if not all([all([elem==unkid for elem in ex[j]]) for ex in encoded]):
+            klist.append(j + 1)
+    return klist

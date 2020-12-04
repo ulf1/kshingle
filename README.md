@@ -96,8 +96,33 @@ data = ['abc d abc de abc def', 'abc defg abc def gh abc def ghi']
 shingled = [ks.shingling_k(s, k=5) for s in data]
 VOCAB = ks.identify_vocab(shingled, n_max_vocab=10)
 VOCAB, unkid = ks.upsert_word_to_vocab(VOCAB, "[UNK]")
-
+# Encode all sequences
 encoded = ks.encoded_with_vocab(shingled, VOCAB, unkid)
+```
+
+
+### Find k
+For bigger `k` values, the generate longer shingles that occur less frequent.
+And less frequent shingles might be excluded in `ks.identify_vocab`.
+As a result at some upper `k` value the generated sequences only contains `[UNK]` encoded elements.
+The function `ks.shrink_k_backwards` identifies `k` values that generate sequences that contain at least one encoded shingle across all examples.
+
+```py
+import kshingle as ks
+data = ['abc d abc de abc def', 'abc defg abc def gh abc def ghi']
+
+# Step 1: Build a VOCAB
+shingled = [ks.shingling_k(s, k=9) for s in data]
+VOCAB = ks.identify_vocab(shingled, n_max_vocab=10)
+VOCAB, unkid = ks.upsert_word_to_vocab(VOCAB, "[UNK]")
+encoded = encoded_with_vocab(shingled, VOCAB, unkid)
+# Identify k's that are actually used
+klist = ks.shrink_k_backwards(encoded, unkid)
+
+# Step 2: Shingle sequences again
+shingled = [ks.shingling_list(s, klist=klist) for s in data]
+encoded = encoded_with_vocab(shingled, VOCAB, unkid)
+# ...
 ```
 
 
