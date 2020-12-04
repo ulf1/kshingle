@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Union
 import functools
 import itertools
 import collections
@@ -78,3 +78,113 @@ def identify_vocab(shingled: List[List[str]],
         voc = voc[:n_max_vocab]
 
     return voc
+
+
+def upsert_word_to_vocab(VOCAB: List[str], word: str) -> (List[str], int):
+    """Upsert a word to to vocabulary, and return new vocabulary list
+        as well as the word's index
+
+    VOCAB : List[str]
+        vocabulary list
+
+    word : str
+        new to word to insert, or existing word word to lookup
+
+    Return:
+    -------
+    List[str]
+        Upldated VOCAB
+
+    int
+        Index of word
+
+    Example:
+    --------
+        import kshingle as ks
+        VOCAB = ['a', 'b']
+        VOCAB, idx = ks.upsert_word_to_vocab(VOCAB, "[UNK]")
+        print(idx, VOCAB)
+    """
+    try:
+        idx = VOCAB.index(word)
+    except Exception:
+        VOCAB.append(word)
+        idx = VOCAB.index(word)
+    return VOCAB, idx
+
+
+def encoded_with_vocab(x: Union[list, str], VOCAB: List[str],
+                       unkid: int) -> Union[list, int]:
+    """Encode all elements of x that are strings.
+
+    x: Union[list, str]
+        Encoding happens if type(x)==str. If type(x)=list then a recursive
+          call on each list element is triggered.
+
+    VOCAB : List[str]
+        vocabulary list
+
+    unkid : int
+        Index of the UKNOWN token, e.g. unkid=VOCAB.index("[UNK]")
+
+    Returns:
+    --------
+    Union[list, int]
+        The final result (after all recursions) has the same structure as x
+          but with integer encoded elements.
+
+    Example:
+    --------
+        import kshingle as ks
+        data = ['abc d abc de abc def', 'abc defg abc def gh abc def ghi']
+        shingled = [ks.shingling_k(s, k=9) for s in data]
+        VOCAB = ks.identify_vocab(shingled, n_max_vocab=10)
+        VOCAB, unkid = ks.upsert_word_to_vocab(VOCAB, "[UNK]")
+        encoded = encoded_with_vocab(shingled, VOCAB, unkid)
+    """
+    if isinstance(x, str):
+        try:
+            return VOCAB.index(x)
+        except Exception:
+            return unkid
+    else:
+        return [encoded_with_vocab(e, VOCAB, unkid) for e in x]
+
+
+def shrink_k_backwards(encoded: List[List[int]], unkid: int) -> List[int]:
+    """Find k-th sequences that only contain UNKIDs to exclude them. Return
+        a list of k's that contain at least one encoded shingle across
+        all examples.
+
+    encoded: List[List[int]]
+
+    unkid : int
+        Index of the UKNOWN token, e.g. unkid=VOCAB.index("[UNK]")
+
+    Return:
+    -------
+    klist : List[int]
+        A list of k's that contain at least one encoded shingle across
+          all examples.
+
+    Example:
+    --------
+        import kshingle as ks
+        data = ['abc d abc de abc def', 'abc defg abc def gh abc def ghi']
+        # Step 1: Build a VOCAB
+        shingled = [ks.shingling_k(s, k=9) for s in data]
+        VOCAB = ks.identify_vocab(shingled, n_max_vocab=10)
+        VOCAB, unkid = ks.upsert_word_to_vocab(VOCAB, "[UNK]")
+        encoded = encoded_with_vocab(shingled, VOCAB, unkid)
+        # Identify k's that are actually used
+        klist = ks.shrink_k_backwards(encoded, unkid)
+        # Step 2: Shingle sequences again
+        shingled = [ks.shingling_list(s, klist=klist) for s in data]
+        ...
+    """
+    k = len(encoded[0])
+    klist = []
+    for j in range(k):
+        if not all([all([elem == unkid for elem in ex[j]]) for ex in encoded]):
+            klist.append(j + 1)
+    return klist
