@@ -55,6 +55,21 @@ shingles = ks.shingleset_list("abc", [1, 3])
 ```
 
 
+### Identifiy Vocabulary for Shingles
+
+```py
+import kshingle as ks
+data = [
+    'Cerato­saurus („Horn-Echse“) ist eine Gattung theropoder Dino­saurier aus dem Ober­jura von Nord­ame­rika und Europa.',
+    'Charak­teris­tisch für diesen zwei­beini­gen Fleisch­fresser waren drei markante Hörner auf dem Schädel sowie eine Reihe kleiner Osteo­derme (Haut­knochen­platten), die über Hals, Rücken und Schwanz ver­lief.',
+    'Er ist der namens­gebende Vertre­ter der Cerato­sauria, einer Gruppe basaler (ursprüng­licher) Thero­poden.'
+]
+shingled = [ks.shingling_k(s, k=6) for s in data]
+VOCAB = ks.identify_vocab(
+    shingled, sortmode='log-x-length', n_min_count=2, n_max_vocab=20)
+print(VOCAB)
+```
+
 
 ## Appendix
 
