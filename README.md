@@ -125,6 +125,26 @@ encoded = encoded_with_vocab(shingled, VOCAB, unkid)
 # ...
 ```
 
+### Padding
+Padding should be done with Keras `pad_sequences`
+
+```py
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+import torch
+import kshingle as ks
+
+# Add [PAD] token
+VOCAB, padidx = ks.upsert_word_to_vocab(VOCAB, "[PAD]")
+
+# Pad each example with Keras
+cfg = {'maxlen': 150, 'dtype': 'int32', 'padding': 'pre', 'truncating': 'pre', 'value': padid}
+padded = [pad_sequences(ex, **cfg).transpose() for ex in encoded]
+
+# Convert to Pytorch
+padded = torch.LongTensor(padded)
+```
+
+
 
 ## Appendix
 
