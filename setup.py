@@ -8,13 +8,13 @@ def read(fname):
 
 setup(name='kshingle',
       version='0.3.0',
-      description='lSplit strings into (character-based) k-shingles',
+      description="Split strings into (character-based) k-shingles",
       long_description=read('README.md'),
       long_description_content_type='text/markdown',
       url='http://github.com/ulf1/kshingle',
       author='Ulf Hamster',
       author_email='554c46@gmail.com',
-      license='MIT',
+      license='Apache License 2.0',
       packages=['kshingle'],
       install_requires=[
           'setuptools>=40.0.0',
