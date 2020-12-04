@@ -3,6 +3,12 @@ Utility functions to split a string into (character-based) k-shingles, shingle s
 
 ## Usage
 
+### Install
+
+```sh
+pip install kshingle>=0.4.1
+```
+
 ### Convert a string to a sequences of shingles
 Using the `k` parameter
 
