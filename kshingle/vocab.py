@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Union
 import functools
 import itertools
 import collections
@@ -107,8 +107,45 @@ def upsert_word_to_vocab(VOCAB: List[str], word: str) -> (List[str], int):
     """
     try:
         idx = VOCAB.index(word)
-    except:
+    except Exception:
         VOCAB.append(word)
         idx = VOCAB.index(word)
     return VOCAB, idx
 
+
+def encoded_with_vocab(x: Union[list, str], VOCAB: List[str],
+                       unkid: int) -> Union[list, int]:
+    """Encode all elements of x that are strings.
+
+    x: Union[list, str]
+        Encoding happens if type(x)==str. If type(x)=list then a recursive
+          call on each list element is triggered.
+
+    VOCAB : List[str]
+        vocabulary list
+
+    unkid : int
+        Index of the UKNOWN token, e.g. unkid=VOCAB.index("[UNK]")
+
+    Returns:
+    --------
+    Union[list, int]
+        The final result (after all recursions) has the same structure as x
+          but with integer encoded elements.
+
+    Example:
+    --------
+        import kshingle as ks
+        data = ['abc d abc de abc def', 'abc defg abc def gh abc def ghi']
+        shingled = [ks.shingling_k(s, k=9) for s in data]
+        VOCAB = ks.identify_vocab(shingled, n_max_vocab=10)
+        VOCAB, unkid = ks.upsert_word_to_vocab(VOCAB, "[UNK]")
+        encoded = encoded_with_vocab(shingled, VOCAB, unkid)
+    """
+    if isinstance(x, str):
+        try:
+            return VOCAB.index(x)
+        except Exception:
+            return unkid
+    else:
+        return [encoded_with_vocab(e, VOCAB, unkid) for e in x]

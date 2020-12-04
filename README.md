@@ -88,6 +88,19 @@ print(idx, VOCAB)
 ```
 
 
+### Encode sequences of shingles
+
+```py
+import kshingle as ks
+data = ['abc d abc de abc def', 'abc defg abc def gh abc def ghi']
+shingled = [ks.shingling_k(s, k=5) for s in data]
+VOCAB = ks.identify_vocab(shingled, n_max_vocab=10)
+VOCAB, unkid = ks.upsert_word_to_vocab(VOCAB, "[UNK]")
+
+encoded = ks.encoded_with_vocab(shingled, VOCAB, unkid)
+```
+
+
 ## Appendix
 
 ### Installation
