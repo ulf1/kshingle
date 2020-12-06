@@ -1,13 +1,85 @@
 # kshingle
 Utility functions to split a string into (character-based) k-shingles, shingle sets, sequences of k-shingles.
 
-## Usage
-
-### Install
+## Install package
 
 ```sh
 pip install kshingle>=0.4.1
 ```
+
+
+## Usage for MinHashing
+
+### Generate Shingle Sets
+For algorithms like MinHash (e.g. [datasketch](https://github.com/ekzhu/datasketch) package) a document (i.e. a string) must be split into a set of unique shingles.
+
+```py
+import kshingle as ks
+shingles = ks.shingleset_k("abc", k=3)
+# {'a', 'ab', 'abc', 'b', 'bc', 'c'}
+```
+
+```py
+import kshingle as ks
+shingles = ks.shingleset_range("abc", 2, 3)
+# {'ab', 'abc', 'bc', 'c'}
+```
+
+```py
+import kshingle as ks
+shingles = ks.shingleset_list("abc", [1, 3])
+# {'a', 'abc', 'b', 'c'}
+```
+
+
+### Wildcard Shingle Sets
+Typos can lead to rare shingles, that don't match with the correct spelling. 
+The longer the shingled text, the less important the effect of typos. 
+However, short text strings will produce less shingles, i.e. the variance of the similarity due to typos is much higher for short text strings than for large text documents.
+In order to smooth this effect, we can generate variants of a specfic shingle by replacing characters with a wildcard characters (e.g. special unicode characters such as `U+FFFF`).
+
+Example: 
+With `k=5` the document `"aBc DeF"` would result in 25 unique shingles without assumned typos.
+For each of these shingles, we enumerate all variants of up to 2 typos.
+This leads to a total of 152 unique shingles with no typo, 1 typo, and 2 typos.
+
+```py
+import kshingle as ks
+shingles = ks.shingleset_k("aBc DeF", k=5)  # -> 25 shingles
+shingles = shingles.union(
+    ks.wildcard_shinglesets(shingles, n_max_wildcards=2))  # -> 152 shingles
+```
+
+
+### datasketch usage
+
+```py
+import datasketch
+import kshingle as ks
+
+# Enable wildcard variants and check the results
+with_wildcard = False
+
+s1 = ks.shingleset_k("Die Zeitung wird zugestellt.", k=5)
+s2 = ks.shingleset_k("Der Bericht wird zugestellt", k=5)
+
+if with_wildcard:
+    s1 = s1.union(ks.wildcard_shinglesets(s1, 2))
+    s2 = s1.union(ks.wildcard_shinglesets(s2, 2))
+
+m1 = datasketch.MinHash(num_perm=128)
+for s in s1:
+    m1.update(s.encode('utf8'))
+
+m2 = datasketch.MinHash(num_perm=128)
+for s in s2:
+    m2.update(s.encode('utf8'))
+
+m1.jaccard(m2)
+```
+
+
+## Usage for Input Sequences
 
 ### Convert a string to a sequences of shingles
 Using the `k` parameter
@@ -36,28 +108,6 @@ import kshingle as ks
 shingles = ks.shingling_list("aBc DeF", klist=[2, 5])
 # [['aB', 'Bc', 'c ', ' D', 'De', 'eF'],
 #  ['aBc D', 'Bc De', 'c DeF']]
-```
-
-
-### Generate Shingle Sets
-For algorithms like MinHash (e.g. [datasketch](https://github.com/ekzhu/datasketch) package) a document (i.e. a string) must be split into a set of unique shingles.
-
-```py
-import kshingle as ks
-shingles = ks.shingleset_k("abc", k=3)
-# {'a', 'ab', 'abc', 'b', 'bc', 'c'}
-```
-
-```py
-import kshingle as ks
-shingles = ks.shingleset_range("abc", 2, 3)
-# {'ab', 'abc', 'bc', 'c'}
-```
-
-```py
-import kshingle as ks
-shingles = ks.shingleset_list("abc", [1, 3])
-# {'a', 'abc', 'b', 'c'}
 ```
 
 
