@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/317843267.svg)](https://zenodo.org/badge/latestdoi/317843267)
+
 # kshingle
 Utility functions to split a string into (character-based) k-shingles, shingle sets, sequences of k-shingles.
 
