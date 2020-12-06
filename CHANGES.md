@@ -1,3 +1,8 @@
+# 0.5.0 / 2020-12-06
+
+  * Generate variants of exact unique k-shingles with up to w typos
+    by replacing characters with wildcards (e.g. U+FFFF unicode character)
+
 # 0.4.0 / 2020-12-04
 
   * Encode shingle sequences to ID sequences
