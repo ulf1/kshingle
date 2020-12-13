@@ -3,7 +3,7 @@ import m2r
 
 
 setup(name='kshingle',
-      version='0.5.1',
+      version='0.6.0',
       description="Split strings into (character-based) k-shingles",
       long_description=m2r.parse_from_file('README.md'),
       long_description_content_type='text/x-rst',
@@ -14,6 +14,7 @@ setup(name='kshingle',
       packages=['kshingle'],
       install_requires=[
           'setuptools>=40.0.0',
+          'm2r>=0.2.1',
           'numba>=0.52.0'
       ],
       python_requires='>=3.6',
