@@ -1,3 +1,7 @@
+# 0.6.0 / 2020-12-14
+
+  * jaccard similarity metrics added
+
 # 0.5.0 / 2020-12-06
 
   * Generate variants of exact unique k-shingles with up to w typos
