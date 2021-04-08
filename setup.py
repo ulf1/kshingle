@@ -1,16 +1,11 @@
 from setuptools import setup
-import os
-
-
-def read(fname):
-    return open(os.path.join(os.path.dirname(__file__), fname)).read()
+import pypandoc
 
 
 setup(name='kshingle',
       version='0.6.1',
       description="Split strings into (character-based) k-shingles",
-      # long_description=read('README.md'),
-      # long_description_content_type='text/markdown',
+      long_description=pypandoc.convert('README.md', 'rst'),
       url='http://github.com/ulf1/kshingle',
       author='Ulf Hamster',
       author_email='554c46@gmail.com',
