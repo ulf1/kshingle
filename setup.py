@@ -25,4 +25,4 @@ setup(name='kshingle',
           'numba>=0.52.0'
       ],
       python_requires='>=3.6',
-      zip_safe=True)
+      zip_safe=False)
