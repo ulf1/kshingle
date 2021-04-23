@@ -1,5 +1,7 @@
 [![PyPI version](https://badge.fury.io/py/kshingle.svg)](https://badge.fury.io/py/kshingle)
 [![DOI](https://zenodo.org/badge/317843267.svg)](https://zenodo.org/badge/latestdoi/317843267)
+[![kshingle](https://snyk.io/advisor/python/kshingle/badge.svg)](https://snyk.io/advisor/python/kshingle)
+
 
 # kshingle
 Utility functions to split a string into (character-based) k-shingles, shingle sets, sequences of k-shingles.
@@ -7,7 +9,7 @@ Utility functions to split a string into (character-based) k-shingles, shingle s
 ## Install package
 
 ```sh
-pip install kshingle>=0.4.1
+pip install kshingle>=0.6.3
 ```
 
 

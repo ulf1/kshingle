@@ -1,3 +1,8 @@
+# 0.6.3 / 2020-04-23
+
+  * Test multiple python versions
+  * Installation problems: zip_true set to False because file import required
+
 # 0.6.1 / 2020-12-14
 
   * m2r removed because it caused an installation error
