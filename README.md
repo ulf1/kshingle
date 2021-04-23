@@ -7,7 +7,7 @@ Utility functions to split a string into (character-based) k-shingles, shingle s
 ## Install package
 
 ```sh
-pip install kshingle>=0.4.1
+pip install kshingle>=0.6.3
 ```
 
 
