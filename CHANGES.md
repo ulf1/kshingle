@@ -1,3 +1,7 @@
+# 0.6.3 / 2020-04-23
+
+  * Test multiple python versions
+
 # 0.6.1 / 2020-12-14
 
   * m2r removed because it caused an installation error
