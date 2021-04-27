@@ -1,5 +1,11 @@
 from setuptools import setup
-import pypandoc
+import os
+
+
+def read(fname):
+    with open(os.path.join(os.path.dirname(__file__), fname)) as fp:
+        s = fp.read()
+    return s
 
 
 def get_version(path):
@@ -15,7 +21,7 @@ def get_version(path):
 setup(name='kshingle',
       version=get_version("kshingle/__init__.py"),
       description="Split strings into (character-based) k-shingles",
-      long_description=pypandoc.convert('README.md', 'rst'),
+      long_description=read('README.rst'),
       url='http://github.com/ulf1/kshingle',
       author='Ulf Hamster',
       author_email='554c46@gmail.com',
@@ -25,4 +31,4 @@ setup(name='kshingle',
           'numba>=0.52.0'
       ],
       python_requires='>=3.6',
-      zip_safe=False)
+      zip_safe=True)
