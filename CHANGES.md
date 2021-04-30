@@ -1,3 +1,7 @@
+# 0.6.6 / 2020-04-30
+
+  * Selection algorithm to build a vocabulary
+
 # 0.6.3 / 2020-04-23
 
   * Test multiple python versions
