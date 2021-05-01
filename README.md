@@ -290,18 +290,27 @@ len(db2)
 ```
 
 
-### Select the shingles (CEWS) to build a vocabulary list
+### Select the shingles (CEWS), create pattern list, and encode data
 
 ```py
 # use `db` or `db2` (see above)
 import kshingle as ks
 memo = ks.cews(db2, threshold=0.9, min_count_split=10, max_wildcards=2)
 
-# Build a vocabulary list
-VOCAB = list(memo.keys())
+# Build a pattern list
+PATTERNS = ks.shingles_to_patterns(memo, wildcard="?")
+unkid = len(PATTERNS)
 ```
 
+Finally, we can start to encode data
 
+```py
+# generate all shingles
+shingled = [ks.shingleseqs_k(doc, k=5) for doc in docs]
+
+# Encode data
+encoded = ks.encode_with_patterns(shingled, PATTERNS, unkid)
+```
 
 
 

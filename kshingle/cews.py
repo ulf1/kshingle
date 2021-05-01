@@ -1,5 +1,5 @@
 import re
-from typing import Optional, Dict, List
+from typing import Optional, Dict, List, Union
 
 
 def select_most_frequent_shingles(matches: List[str],
@@ -201,3 +201,29 @@ def cews(db: Dict[str, int],
             min_count_split=min_count_split, max_wildcards=max_wildcards)
     # done
     return memo
+
+
+def shingles_to_patterns(memo: Dict[str, int],
+                         wildcard: Optional[str] = '\uFFFF'
+                         ) -> List[re.Pattern]:
+    """Convert shingles with wildcards to regex patterns"""
+    PATTERNS = []
+    for s in memo.keys():
+        reg = s.replace(wildcard, r"\w{1}")
+        pat = re.compile(f"^{reg}$")
+        PATTERNS.append(pat)
+    return PATTERNS
+
+
+def encode_with_patterns(x: Union[list, str],
+                         PATTERNS: List[re.Pattern],
+                         unkid: Optional[int] = None):
+    """Encode all elements of x with the regex pattern."""
+    if isinstance(x, str):
+        n_pat = len(PATTERNS)
+        for i in range(n_pat):
+            if PATTERNS[i].match(x):
+                return i
+        return unkid if unkid else n_pat
+    else:
+        return [encode_with_patterns(el, PATTERNS, unkid) for el in x]
