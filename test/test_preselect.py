@@ -22,7 +22,7 @@ def test2():
 
 def test3():
     with pytest.raises(Exception):
-        memo = ks.expandshingle("a", db={}, memo={}, min_count_split=0)
+        ks.expandshingle("a", db={}, memo={}, min_count_split=0)
 
 
 def test4():
@@ -64,5 +64,5 @@ def test6b():
     db = {"ab": 2, "abq": 4, "xabq": 2, "yabq": 3}
     memo = ks.preselect(
         db, wildcard="?", threshold=.8, min_count_split=3, max_wildcards=3)
-    assert memo == {'ab?': 4, 'a?q': 4, 'y??q': 3, 
+    assert memo == {'ab?': 4, 'a?q': 4, 'y??q': 3,
                     'y?bq': 3, 'ya?q': 3, 'yabq': 3}

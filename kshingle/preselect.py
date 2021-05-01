@@ -60,15 +60,15 @@ def expandshingle(s: str,
     s: str
 
     db: dict
-        Database with shingles as `key` and their frequencies/counts as `value`.
-          Assumptions: 
+        Database with shingles as `key` and their frequencies/counts as `value`
+          Assumptions:
           - Python's `dict` are automatically in alphabetic order but not key
               length, i.e. we still need to filter keys by length initially.
           - The database `db` is immutable.
           Preprocessing: Make sure that each shingle has a sufficient number of
             counts/frequencies, e.g. remove shingles that occur less than 20x.
 
-    memo: dict (default: {}) 
+    memo: dict (default: {})
         Database for memoization, i.e. `memo[shingle]=count`. In case of the
           wildcarded shingle, the residual counts that are not covered by the
           selected set of shingles (Basically the `1 - p`).
@@ -80,7 +80,7 @@ def expandshingle(s: str,
     threshold: float (Default: 0.90)
 
     min_count_split: int (Default: 2)
-        If the combined frequency of all shingles covered by one wildcard 
+        If the combined frequency of all shingles covered by one wildcard
           shingle (count sum of the regex query results) is less than the
           specified minimum total frequency, then the recursion aborts.
 
@@ -94,7 +94,8 @@ def expandshingle(s: str,
         return memo
     # (0b) abort
     if min_count_split < 1:
-        raise Exception(f"min_count_split must greater equal 1.")
+        raise Exception(
+            f"min_count_split={min_count_split} but must greater equal 1.")
 
     # Part 1: Prefix/Suffix Wildcards
     # - Expand on the left side (prefix wildcard) and right side (suffix w.)
@@ -158,8 +159,9 @@ def expandshingle(s: str,
                 matches, db, min_count_split, threshold)
 
             # (2c) Assign the counts of the unselected shingles to the new
-            #  wildcard-shingle (`residual_count`), store it the database (`db`)
-            #  and memoization cache (`memo`), and traverse to the next knot
+            #  wildcard-shingle (`residual_count`), store it the database
+            #  (`db`) and memoization cache (`memo`), and traverse to the next
+            #  knot
             if residual_count >= min_count_split:
                 if snew not in memo:  # memoization trick
                     # db[snew] = total_count  # wegen infix
@@ -189,7 +191,7 @@ def preselect(db: Dict[str, int],
               threshold: Optional[float] = 0.9,
               min_count_split: Optional[int] = 2,
               max_wildcards: Optional[int] = 3):
-    """
+    """Collectively Exhaustive Wildcard Shingling (CEWS)
     """
     shingles = list(db.keys())
     memo = {}
