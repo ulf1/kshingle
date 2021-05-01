@@ -205,7 +205,7 @@ def cews(db: Dict[str, int],
 
 def shingles_to_patterns(memo: Dict[str, int],
                          wildcard: Optional[str] = '\uFFFF'
-                         ) -> List[re.Pattern]:
+                         ) -> list:  # List[re.Pattern]
     """Convert shingles with wildcards to regex patterns"""
     PATTERNS = []
     for s in memo.keys():
@@ -216,7 +216,7 @@ def shingles_to_patterns(memo: Dict[str, int],
 
 
 def encode_with_patterns(x: Union[list, str],
-                         PATTERNS: List[re.Pattern],
+                         PATTERNS: list,  # List[re.Pattern]
                          unkid: Optional[int] = None):
     """Encode all elements of x with the regex pattern."""
     if isinstance(x, str):
