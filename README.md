@@ -105,7 +105,7 @@ Using the `k` parameter
 
 ```py
 import kshingle as ks
-shingles = ks.shingling_k("aBc DeF", k=3)
+shingles = ks.shingleseqs_k("aBc DeF", k=3)
 # [['a', 'B', 'c', ' ', 'D', 'e', 'F'],
 #  ['aB', 'Bc', 'c ', ' D', 'De', 'eF'],
 #  ['aBc', 'Bc ', 'c D', ' De', 'DeF']]
@@ -115,7 +115,7 @@ Using a range for `k`
 
 ```py
 import kshingle as ks
-shingles = ks.shingling_range("aBc DeF", n_min=2, n_max=3)
+shingles = ks.shingleseqs_range("aBc DeF", n_min=2, n_max=3)
 # [['aB', 'Bc', 'c ', ' D', 'De', 'eF'],
 #  ['aBc', 'Bc ', 'c D', ' De', 'DeF']]
 ```
@@ -124,7 +124,7 @@ Using a specific list of k values
 
 ```py
 import kshingle as ks
-shingles = ks.shingling_list("aBc DeF", klist=[2, 5])
+shingles = ks.shingleseqs_list("aBc DeF", klist=[2, 5])
 # [['aB', 'Bc', 'c ', ' D', 'De', 'eF'],
 #  ['aBc D', 'Bc De', 'c DeF']]
 ```
@@ -139,7 +139,7 @@ data = [
     'Charak­teris­tisch für diesen zwei­beini­gen Fleisch­fresser waren drei markante Hörner auf dem Schädel sowie eine Reihe kleiner Osteo­derme (Haut­knochen­platten), die über Hals, Rücken und Schwanz ver­lief.',
     'Er ist der namens­gebende Vertre­ter der Cerato­sauria, einer Gruppe basaler (ursprüng­licher) Thero­poden.'
 ]
-shingled = [ks.shingling_k(s, k=6) for s in data]
+shingled = [ks.shingleseqs_k(s, k=6) for s in data]
 VOCAB = ks.identify_vocab(
     shingled, sortmode='log-x-length', n_min_count=2, n_max_vocab=20)
 print(VOCAB)
@@ -168,7 +168,7 @@ print(idx, VOCAB)
 ```py
 import kshingle as ks
 data = ['abc d abc de abc def', 'abc defg abc def gh abc def ghi']
-shingled = [ks.shingling_k(s, k=5) for s in data]
+shingled = [ks.shingleseqs_k(s, k=5) for s in data]
 VOCAB = ks.identify_vocab(shingled, n_max_vocab=10)
 VOCAB, unkid = ks.upsert_word_to_vocab(VOCAB, "[UNK]")
 # Encode all sequences
@@ -187,7 +187,7 @@ import kshingle as ks
 data = ['abc d abc de abc def', 'abc defg abc def gh abc def ghi']
 
 # Step 1: Build a VOCAB
-shingled = [ks.shingling_k(s, k=9) for s in data]
+shingled = [ks.shingleseqs_k(s, k=9) for s in data]
 VOCAB = ks.identify_vocab(shingled, n_max_vocab=10)
 VOCAB, unkid = ks.upsert_word_to_vocab(VOCAB, "[UNK]")
 encoded = ks.encoded_with_vocab(shingled, VOCAB, unkid)
@@ -195,7 +195,7 @@ encoded = ks.encoded_with_vocab(shingled, VOCAB, unkid)
 klist = ks.shrink_k_backwards(encoded, unkid)
 
 # Step 2: Shingle sequences again
-shingled = [ks.shingling_list(s, klist=klist) for s in data]
+shingled = [ks.shingleseqs_list(s, klist=klist) for s in data]
 encoded = encoded_with_vocab(shingled, VOCAB, unkid)
 # ...
 ```
@@ -239,7 +239,7 @@ docs = ["...", "..."]
 db = Counter()
 for doc in docs:
     # extract all shingles of different k-length (no wildcards!)
-    shingles = ks.shingling_k(doc, k=5)  # bump it up to 8
+    shingles = ks.shingleseqs_k(doc, k=5)  # bump it up to 8
     # count all unique shingles, and add the result
     db += Counter(itertools.chain(*shingles))
 

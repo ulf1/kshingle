@@ -1,6 +1,6 @@
 __version__ = '0.7.0'
 
-from .shingling import (shingling_k, shingling_list, shingling_range)
+from .shingleseqs import (shingleseqs_k, shingleseqs_list, shingleseqs_range)
 from .shingleset import (shingleset_k, shingleset_range, shingleset_list)
 from .vocab import (
     identify_vocab, upsert_word_to_vocab, encoded_with_vocab,

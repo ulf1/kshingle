@@ -1,9 +1,10 @@
 from typing import List
 import numba
+import warnings
 
 
 @numba.jit(nopython=True)
-def shingling_k(s: str, k: int) -> List[List[str]]:
+def shingleseqs_k(s: str, k: int) -> List[List[str]]:
     """Convert a string to a list of k sequences with k-shingles
 
     Parameters:
@@ -24,7 +25,7 @@ def shingling_k(s: str, k: int) -> List[List[str]]:
     Example:
     --------
         import kshingle as ks
-        shingles = ks.shingling_k("abc", k=2)
+        shingles = ks.shingleseqs_k("abc", k=2)
     """
     shingles = []
     q = len(s)
@@ -34,7 +35,7 @@ def shingling_k(s: str, k: int) -> List[List[str]]:
 
 
 @numba.jit(nopython=True)
-def shingling_range(s: str, n_min: int, n_max: int) -> List[List[str]]:
+def shingleseqs_range(s: str, n_min: int, n_max: int) -> List[List[str]]:
     """Convert a string to a list of k sequences with k-shingles
 
     Parameters:
@@ -58,7 +59,7 @@ def shingling_range(s: str, n_min: int, n_max: int) -> List[List[str]]:
     Example:
     --------
         import kshingle as ks
-        shingles = ks.shingling_range("abcd", [2, 3])
+        shingles = ks.shingleseqs_range("abcd", [2, 3])
     """
     # correct wrong inputs
     n_max_ = max(0, n_max)
@@ -71,7 +72,7 @@ def shingling_range(s: str, n_min: int, n_max: int) -> List[List[str]]:
     return shingles
 
 
-def shingling_list(s: str, klist: List[int]) -> List[List[str]]:
+def shingleseqs_list(s: str, klist: List[int]) -> List[List[str]]:
     """Convert a string to a list of k sequences with k-shingles
 
     Parameters:
@@ -92,18 +93,48 @@ def shingling_list(s: str, klist: List[int]) -> List[List[str]]:
     Example:
     --------
         import kshingle as ks
-        shingles = ks.shingling_list("abcd", klist=[1, 3])
+        shingles = ks.shingleseqs_list("abcd", klist=[1, 3])
     """
-    return shingling_list_numba(s, numba.typed.List(klist))
+    return shingleseqs_list_numba(s, numba.typed.List(klist))
 
 
 @numba.jit(nopython=True)
-def shingling_list_numba(s: str,
-                         klist: numba.typed.List
-                         ) -> List[List[str]]:
+def shingleseqs_list_numba(s: str, klist: numba.typed.List) -> List[List[str]]:
     shingles = []
     q = len(s)
     for n in klist:
         if n > 0:
             shingles.append([s[i:(i + n)] for i in range(q - n + 1)])
     return shingles
+
+
+def shingling_k(s: str, k: int) -> List[List[str]]:
+    warnings.warn((
+        "kshingle.shingling_k will be removed in version '0.8.0'."
+        " Please use kshingle.shingleseqs_k instead."
+    ), DeprecationWarning, stacklevel=2)
+    return shingleseqs_k(s, k)
+
+
+def shingling_range(s: str, n_min: int, n_max: int) -> List[List[str]]:
+    warnings.warn((
+        "kshingle.shingling_k will be removed in version '0.8.0'."
+        " Please use kshingle.shingleseqs_k instead."
+    ), DeprecationWarning, stacklevel=2)
+    return shingleseqs_range(s, n_min, n_max)
+
+
+def shingling_list(s: str, klist: List[int]) -> List[List[str]]:
+    warnings.warn((
+        "kshingle.shingling_k will be removed in version '0.8.0'."
+        " Please use kshingle.shingleseqs_k instead."
+    ), DeprecationWarning, stacklevel=2)
+    return shingleseqs_list(s, klist)
+
+
+def shingling_list_numba(s: str, klist: numba.typed.List) -> List[List[str]]:
+    warnings.warn((
+        "kshingle.shingling_k will be removed in version '0.8.0'."
+        " Please use kshingle.shingleseqs_k instead."
+    ), DeprecationWarning, stacklevel=2)
+    return shingleseqs_list_numba(s, klist)
