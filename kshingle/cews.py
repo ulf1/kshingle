@@ -6,7 +6,41 @@ def select_most_frequent_shingles(matches: List[str],
                                   db: Dict[str, int],
                                   min_count_split: int,
                                   threshold: float):
-    """
+    """Select the most frequent shingles that matches the wildcard shingle
+
+    Parameters:
+    -----------
+    matches : List[str]
+        A list of shingles from the database (`db`) that matches the current
+          wildcard shingle in the `expandshingle` function.
+
+    db: dict
+        Database with shingles as `key` and their frequencies/counts as `value`
+          Assumptions:
+          - Python's `dict` are automatically in alphabetic order but not key
+              length, i.e. we still need to filter keys by length initially.
+          - The database `db` is immutable.
+          Preprocessing: Make sure that each shingle has a sufficient number of
+            counts/frequencies, e.g. remove shingles that occur less than 20x.
+
+    threshold: float (Default: 0.80)
+        Replace max. `1.0 - threshold` of the least frequent shingles with
+          the wildcard shingle.
+
+    min_count_split: int (Default: 2)
+        If the combined frequency of all shingles covered by one wildcard
+          shingle (count sum of the regex query results) is less than the
+          specified minimum total frequency, then the recursion aborts.
+
+    Returns:
+    --------
+    selected_shingles : List[str]
+        The selected most frequent shingles
+
+    residual_count : int
+        The residual counts (of the unselected shingles) that will be
+          assigned to the wildcard shingle in `expandshingle`
+
     Example:
     --------
         selected_shingles, residual_count = select_most_frequent_shingles(
@@ -52,12 +86,15 @@ def expandshingle(s: str,
                   db: Dict[str, int],
                   memo: Optional[dict] = {},
                   wildcard: Optional[str] = '\uFFFF',
-                  threshold: Optional[float] = 0.9,
+                  threshold: Optional[float] = 0.8,
                   min_count_split: Optional[int] = 2,
                   max_wildcards: Optional[int] = 3):
     """Recursive algorithm to select given k-shingles
 
+    Parameters:
+    -----------
     s: str
+        A shingle, i.e. a string of text
 
     db: dict
         Database with shingles as `key` and their frequencies/counts as `value`
@@ -72,12 +109,17 @@ def expandshingle(s: str,
         Database for memoization, i.e. `memo[shingle]=count`. In case of the
           wildcarded shingle, the residual counts that are not covered by the
           selected set of shingles (Basically the `1 - p`).
+        The keys in the memoization cache are selected shingles of the CEWS
+          algorithm.
 
     wildcard: str  (Default: '\uFFFF')
-        The reserved wildcard character. The unicode character U+FFFF means
-          "Not a Character", and never holds an actual unicode character.
+        An unicode char that is not actually used by any natural language,
+          or the text that you analyzing, e.g. U+FFFE or U+FFFF
+          See https://en.wikipedia.org/wiki/Specials_(Unicode_block)
 
-    threshold: float (Default: 0.90)
+    threshold: float (Default: 0.80)
+        Replace max. `1.0 - threshold` of the least frequent shingles with
+          the wildcard shingle.
 
     min_count_split: int (Default: 2)
         If the combined frequency of all shingles covered by one wildcard
@@ -88,6 +130,10 @@ def expandshingle(s: str,
         If an input string `s` contains more than the specified maximum
           number of wildcard characters, the recursion aborts.
 
+    Returns:
+    --------
+    memo: dict
+        The updated memoization cache.
     """
     # (0a) stop if the shingle reached the maximum number of wildcards
     if s.count(wildcard) >= max_wildcards:
@@ -188,10 +234,48 @@ def expandshingle(s: str,
 
 def cews(db: Dict[str, int],
          wildcard: Optional[str] = '\uFFFF',
-         threshold: Optional[float] = 0.9,
+         threshold: Optional[float] = 0.8,
          min_count_split: Optional[int] = 2,
          max_wildcards: Optional[int] = 3):
     """Collectively Exhaustive Wildcard Shingling (CEWS)
+
+    Parameters:
+    -----------
+    db: dict
+        Database with shingles as `key` and their frequencies/counts as `value`
+          Assumptions:
+          - Python's `dict` are automatically in alphabetic order but not key
+              length, i.e. we still need to filter keys by length initially.
+          - The database `db` is immutable.
+          Preprocessing: Make sure that each shingle has a sufficient number of
+            counts/frequencies, e.g. remove shingles that occur less than 20x.
+
+    wildcard : str
+        An unicode char that is not actually used by any natural language,
+          or the text that you analyzing, e.g. U+FFFE or U+FFFF
+          See https://en.wikipedia.org/wiki/Specials_(Unicode_block)
+
+    threshold: float (Default: 0.80)
+        Replace max. `1.0 - threshold` of the least frequent shingles with
+          the wildcard shingle.
+
+    min_count_split: int (Default: 2)
+        If the combined frequency of all shingles covered by one wildcard
+          shingle (count sum of the regex query results) is less than the
+          specified minimum total frequency, then the recursion aborts.
+
+    max_wildcards: int (Default: 3)
+        If an input string `s` contains more than the specified maximum
+          number of wildcard characters, the recursion aborts.
+
+    Return:
+    -------
+    memo: dict
+        Database for memoization, i.e. `memo[shingle]=count`. In case of the
+          wildcarded shingle, the residual counts that are not covered by the
+          selected set of shingles (Basically the `1 - p`).
+        The keys in the memoization cache are selected shingles of the CEWS
+          algorithm.
     """
     shingles = list(db.keys())
     memo = {}
@@ -206,7 +290,28 @@ def cews(db: Dict[str, int],
 def shingles_to_patterns(memo: Dict[str, int],
                          wildcard: Optional[str] = '\uFFFF'
                          ) -> list:  # List[re.Pattern]
-    """Convert shingles with wildcards to regex patterns"""
+    """Convert shingles with wildcards to regex patterns
+
+    Parameters:
+    -----------
+    memo: dict
+        Database for memoization, i.e. `memo[shingle]=count`. In case of the
+          wildcarded shingle, the residual counts that are not covered by the
+          selected set of shingles (Basically the `1 - p`).
+        The keys in the memoization cache are selected shingles of the CEWS
+          algorithm.
+
+    wildcard : str
+        An unicode char that is not actually used by any natural language,
+          or the text that you analyzing, e.g. U+FFFE or U+FFFF
+          See https://en.wikipedia.org/wiki/Specials_(Unicode_block)
+
+    Returns:
+    --------
+    PATTERNS : List[re.Pattern]
+        The regex.compile patterns based on the selected shingles in the
+          memoization cache.
+    """
     PATTERNS = []
     for s in memo.keys():
         reg = s.replace(wildcard, r"\w{1}")
@@ -218,7 +323,26 @@ def shingles_to_patterns(memo: Dict[str, int],
 def encode_with_patterns(x: Union[list, str],
                          PATTERNS: list,  # List[re.Pattern]
                          unkid: Optional[int] = None):
-    """Encode all elements of x with the regex pattern."""
+    """Encode all elements of x with the regex pattern.
+
+    Parameters:
+    -----------
+    x : Union[list, str]
+        Encoding happens if type(x)==str. If type(x)=list then a recursive
+          call on each list element is triggered.
+
+    PATTERNS : List[re.Pattern]
+        The regex.compile patterns based on the selected shingles in the
+          memoization cache.
+
+    unkid : int
+        Index of the UKNOWN token (UNK). It's `unkid=len(PATTERNS)` by default
+
+    Returns:
+    --------
+    encoded : Union[list, int]
+        The IDs refer to the position index in PATTERNS list
+    """
     if isinstance(x, str):
         n_pat = len(PATTERNS)
         for i in range(n_pat):
