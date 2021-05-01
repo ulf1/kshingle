@@ -1,5 +1,8 @@
 import kshingle as ks
 import pytest
+import functools
+import itertools
+from collections import Counter
 
 
 def test1():
@@ -66,3 +69,29 @@ def test6b():
         db, wildcard="?", threshold=.8, min_count_split=3, max_wildcards=3)
     assert memo == {'ab?': 4, 'a?q': 4, 'y??q': 3,
                     'y?bq': 3, 'ya?q': 3, 'yabq': 3}
+
+
+def test7():
+    k = 5
+    docs = [
+        "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam ",
+        "nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam ",
+        "erat, sed diam voluptua. At vero eos et accusam et justo duo ",
+        "dolores et ea rebum. Stet clita kasd gubergren, no sea takimata "]
+    # generate all shingles
+    shingled = [ks.shingleseqs_k(doc, k=k) for doc in docs]
+    assert len(shingled) == len(docs)
+    assert len(shingled[0]) == k
+    # run CEWS algorithm
+    db = functools.reduce(lambda x, y: x + Counter(itertools.chain(*y)),
+                          shingled, Counter([]))
+    memo = ks.cews(db, threshold=0.8, min_count_split=10, max_wildcards=2)
+    # encode shingles with patterns
+    PATTERNS = ks.shingles_to_patterns(memo)
+    encoded = ks.encode_with_patterns(shingled, PATTERNS, len(PATTERNS))
+    assert len(PATTERNS) == len(memo)
+    assert len(encoded) == len(shingled)
+    for i in range(len(encoded)):
+        assert len(encoded[i]) == len(shingled[i])
+        for j in range(len(encoded[i])):
+            assert len(encoded[i][j]) == len(shingled[i][j])
