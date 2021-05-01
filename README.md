@@ -6,16 +6,23 @@
 [![deepcode](https://www.deepcode.ai/api/gh/badge?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwbGF0Zm9ybTEiOiJnaCIsIm93bmVyMSI6InVsZjEiLCJyZXBvMSI6ImtzaGluZ2xlIiwiaW5jbHVkZUxpbnQiOmZhbHNlLCJhdXRob3JJZCI6Mjk0NTIsImlhdCI6MTYxOTUzNzc4NX0._uaK3UtRr5uV_OB_h1ruFROke3yFImNrJZTRP8KSf_o)](https://www.deepcode.ai/app/gh/ulf1/kshingle/_/dashboard?utm_content=gh%2Fulf1%2Fkshingle)
 
 # kshingle
-Utility functions to split a string into (character-based) k-shingles, shingle sets, sequences of k-shingles.
+Utility functions to split a string into character-level k-shingles, shingle sets, sequences of k-shingles.
+
+The package `kshingle` can be deployed for the following use cases:
+
+- [Character-level Shingling for MinHash/LSH](#usage-for-minhashing) : The result is a set of unique shingles for each document.
+- [Transform text into Input Sequences for NNs](#usage-for-input-sequences) : The result is input sequence with k features.
+
 
 ## Install package
 
 ```sh
-pip install kshingle>=0.6.5
+pip install kshingle>=0.7.0
 ```
 
 
 ## Usage for MinHashing
+Please note that the package `kshingle` only addresses character-level shingles, and **not** combining word tokens (n-grams, w-shingling).
 
 ### Generate Shingle Sets
 For algorithms like MinHash (e.g. [datasketch](https://github.com/ekzhu/datasketch) package) a document (i.e. a string) must be split into a set of unique shingles.
@@ -84,6 +91,11 @@ for s in s2:
 
 m1.jaccard(m2)
 ```
+
+### References
+- A. Z. Broder, “On the resemblance and containment of documents,” in Proceedings. Compression and Complexity of SEQUENCES 1997 (Cat. No.97TB100171), Salerno, Italy, 1998, pp. 21–29, doi: [10.1109/SEQUEN.1997.666900](https://doi.org/10.1109/SEQUEN.1997.666900)
+- Ch. 3 in: J. Leskovec, A. Rajaraman, and J. D. Ullman, Mining of Massive Datasets, 2nd ed. Cambridge: Cambridge University Press, 2014. URL: [http://infolab.stanford.edu/~ullman/mmds/book.pdf](http://infolab.stanford.edu/~ullman/mmds/book.pdf)
+- “MinHash,” Wikipedia. Apr. 17, 2021, Accessed: May 01, 2021. Available: [https://en.wikipedia.org/w/index.php?title=MinHash&oldid=1018264865](https://en.wikipedia.org/w/index.php?title=MinHash&oldid=1018264865).
 
 
 ## Usage for Input Sequences
@@ -206,6 +218,90 @@ padded = [pad_sequences(ex, **cfg).transpose() for ex in encoded]
 # Convert to Pytorch
 padded = torch.LongTensor(padded)
 ```
+
+
+## Collectively Exhaustive Wildcard Shingling (CEWS)
+CEWS is a selection algorithm for k-shingles with wildcards to build a vocabulary list.
+
+
+### Extract and count shingles
+First, build a database `db` with shingles as keys and the occurence within a corpus as values.
+
+```py
+from collections import Counter
+import kshingle as ks
+import itertools
+
+# load the corpora
+docs = ["...", "..."]
+
+# loop over all documents
+db = Counter()
+for doc in docs:
+    # extract all shingles of different k-length (no wildcards!)
+    shingles = ks.shingling_k(doc, k=5)  # bump it up to 8
+    # count all unique shingles, and add the result
+    db += Counter(itertools.chain(*shingles))
+
+db = dict(db)
+```
+
+### Extra: Augment text by adding typological errors
+In order to increase the generalizibility of a trained ML model,
+we can use text augmentation to produce possible edge case of errornous text.
+High quality corpora try to avoid such errors,
+and corpora based laymen's text might not include each possible edge case. 
+
+```py
+import augtxt.keyboard_layouts as kbl
+from augtxt.augmenters import wordaug
+import numpy as np
+from collections import Counter
+
+# Augmentation settings: Probability of typological errors
+settings = [
+    {'p': 0.50, 'fn': 'typo.drop_n_next_twice', 'args': {'loc': ['m', 'e'], 'keep_case': [True, False]} },
+    {'p': 0.50, 'fn': 'typo.swap_consecutive', 'args': {'loc': ['m', 'e'], 'keep_case': [True, False]} },
+    {'p': 0.25, 'fn': 'typo.pressed_twice', 'args': {'loc': 'u', 'keep_case': [True, False]} },
+    {'p': 0.25, 'fn': 'typo.drop_char', 'args': {'loc': ['m', 'e'], 'keep_case': [True, False]} },
+    {'p': 0.25, 'fn': 'typo.pressed_shiftalt', 'args': {'loc': ['b', 'm'], 'keymap': kbl.macbook_us, 'trans': kbl.keyboard_transprob}},
+]
+# Number of augmentation rounds (i.e. the total count will be 10-1000x larger)
+n_augm_rounds = 10
+# maximum percentage of augmentions
+pct_augmented = 0.1 
+pct_augmented *= (1.0 + np.prod([cfg['p'] for cfg in settings]))
+# Count factor for original shingle
+n_factor_original = int((n_augm_rounds / pct_augmented) * (1 - pct_augmented))
+# reproducibility
+np.random.seed(seed=42)
+
+# loop over shingle frequency database (`db`)
+db2 = Counter()
+for original in db.keys():
+    augmented = [wordaug(original, settings) for _ in range(n_augm_rounds)]
+    # count all unique augmented shingles, and add the result
+    db2 += Counter(augmented)
+    # count the original shingle
+    db2[original] += n_factor_original
+
+db2 = dict(db2)
+len(db2)
+```
+
+
+### Select the shingles (CEWS) to build a vocabulary list
+
+```py
+# use `db` or `db2` (see above)
+import kshingle as ks
+memo = ks.cews(db2, threshold=0.9, min_count_split=10, max_wildcards=2)
+
+# Build a vocabulary list
+VOCAB = list(memo.keys())
+```
+
+
 
 
 
