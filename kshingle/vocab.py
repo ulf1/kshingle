@@ -3,6 +3,7 @@ import functools
 import itertools
 import collections
 import math
+import warnings
 
 
 def identify_vocab(shingled: List[List[str]],
@@ -113,8 +114,9 @@ def upsert_word_to_vocab(VOCAB: List[str], word: str) -> (List[str], int):
     return VOCAB, idx
 
 
-def encoded_with_vocab(x: Union[list, str], VOCAB: List[str],
-                       unkid: int) -> Union[list, int]:
+def encode_with_vocab(x: Union[list, str],
+                      VOCAB: List[str],
+                      unkid: int) -> Union[list, int]:
     """Encode all elements of x that are strings.
 
     x: Union[list, str]
@@ -140,7 +142,7 @@ def encoded_with_vocab(x: Union[list, str], VOCAB: List[str],
         shingled = [ks.shingling_k(s, k=9) for s in data]
         VOCAB = ks.identify_vocab(shingled, n_max_vocab=10)
         VOCAB, unkid = ks.upsert_word_to_vocab(VOCAB, "[UNK]")
-        encoded = ks.encoded_with_vocab(shingled, VOCAB, unkid)
+        encoded = ks.encode_with_vocab(shingled, VOCAB, unkid)
     """
     if isinstance(x, str):
         try:
@@ -148,7 +150,7 @@ def encoded_with_vocab(x: Union[list, str], VOCAB: List[str],
         except Exception:
             return unkid
     else:
-        return [encoded_with_vocab(e, VOCAB, unkid) for e in x]
+        return [encode_with_vocab(e, VOCAB, unkid) for e in x]
 
 
 def shrink_k_backwards(encoded: List[List[int]], unkid: int) -> List[int]:
@@ -175,7 +177,7 @@ def shrink_k_backwards(encoded: List[List[int]], unkid: int) -> List[int]:
         shingled = [ks.shingling_k(s, k=9) for s in data]
         VOCAB = ks.identify_vocab(shingled, n_max_vocab=10)
         VOCAB, unkid = ks.upsert_word_to_vocab(VOCAB, "[UNK]")
-        encoded = ks.encoded_with_vocab(shingled, VOCAB, unkid)
+        encoded = ks.encode_with_vocab(shingled, VOCAB, unkid)
         # Identify k's that are actually used
         klist = ks.shrink_k_backwards(encoded, unkid)
         # Step 2: Shingle sequences again
@@ -188,3 +190,13 @@ def shrink_k_backwards(encoded: List[List[int]], unkid: int) -> List[int]:
         if not all([all([elem == unkid for elem in ex[j]]) for ex in encoded]):
             klist.append(j + 1)
     return klist
+
+
+def encoded_with_vocab(x: Union[list, str],
+                       VOCAB: List[str],
+                       unkid: int) -> Union[list, int]:
+    warnings.warn((
+        "kshingle.encode_with_vocab will be removed in version '0.8.0'."
+        " Please use kshingle.encode_with_vocab instead."
+    ), DeprecationWarning, stacklevel=2)
+    return encode_with_vocab(x, VOCAB, unkid)

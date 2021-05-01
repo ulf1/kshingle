@@ -172,7 +172,7 @@ shingled = [ks.shingleseqs_k(s, k=5) for s in data]
 VOCAB = ks.identify_vocab(shingled, n_max_vocab=10)
 VOCAB, unkid = ks.upsert_word_to_vocab(VOCAB, "[UNK]")
 # Encode all sequences
-encoded = ks.encoded_with_vocab(shingled, VOCAB, unkid)
+encoded = ks.encode_with_vocab(shingled, VOCAB, unkid)
 ```
 
 
@@ -190,13 +190,13 @@ data = ['abc d abc de abc def', 'abc defg abc def gh abc def ghi']
 shingled = [ks.shingleseqs_k(s, k=9) for s in data]
 VOCAB = ks.identify_vocab(shingled, n_max_vocab=10)
 VOCAB, unkid = ks.upsert_word_to_vocab(VOCAB, "[UNK]")
-encoded = ks.encoded_with_vocab(shingled, VOCAB, unkid)
+encoded = ks.encode_with_vocab(shingled, VOCAB, unkid)
 # Identify k's that are actually used
 klist = ks.shrink_k_backwards(encoded, unkid)
 
 # Step 2: Shingle sequences again
 shingled = [ks.shingleseqs_list(s, klist=klist) for s in data]
-encoded = encoded_with_vocab(shingled, VOCAB, unkid)
+encoded = encode_with_vocab(shingled, VOCAB, unkid)
 # ...
 ```
 
