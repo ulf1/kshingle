@@ -1,6 +1,6 @@
-# 0.6.6 / 2020-04-30
+# 0.7.0 / 2020-04-30
 
-  * Selection algorithm to build a vocabulary
+  * Collectively Exhaustive Wildcard Shingling (CEWS) to build a vocabulary
 
 # 0.6.3 / 2020-04-23
 

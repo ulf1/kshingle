@@ -1,4 +1,4 @@
-__version__ = '0.6.6'
+__version__ = '0.7.0'
 
 from .shingling import (shingling_k, shingling_list, shingling_range)
 from .shingleset import (shingleset_k, shingleset_range, shingleset_list)
@@ -7,4 +7,4 @@ from .vocab import (
     shrink_k_backwards)
 from .wildcard import wildcard_shinglesets
 from .metrics import jaccard, jaccard_strings
-from .preselect import (preselect, expandshingle)
+from .cews import (cews, expandshingle)

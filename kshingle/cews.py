@@ -186,11 +186,11 @@ def expandshingle(s: str,
     return memo
 
 
-def preselect(db: Dict[str, int],
-              wildcard: Optional[str] = '\uFFFF',
-              threshold: Optional[float] = 0.9,
-              min_count_split: Optional[int] = 2,
-              max_wildcards: Optional[int] = 3):
+def cews(db: Dict[str, int],
+         wildcard: Optional[str] = '\uFFFF',
+         threshold: Optional[float] = 0.9,
+         min_count_split: Optional[int] = 2,
+         max_wildcards: Optional[int] = 3):
     """Collectively Exhaustive Wildcard Shingling (CEWS)
     """
     shingles = list(db.keys())

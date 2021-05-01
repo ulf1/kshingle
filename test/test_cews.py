@@ -36,7 +36,7 @@ def test4():
 
 def test4b():
     db = {"qar": 2, "qbr": 3, "qcr": 4, "qdr": 5, "qer": 6, "qfr": 7}
-    memo = ks.preselect(
+    memo = ks.cews(
         db, wildcard="?", threshold=.8, min_count_split=1, max_wildcards=1)
     assert memo == {'q?r': 9, 'qdr': 5, 'qer': 6, 'qfr': 7}
 
@@ -62,7 +62,7 @@ def test6():
 
 def test6b():
     db = {"ab": 2, "abq": 4, "xabq": 2, "yabq": 3}
-    memo = ks.preselect(
+    memo = ks.cews(
         db, wildcard="?", threshold=.8, min_count_split=3, max_wildcards=3)
     assert memo == {'ab?': 4, 'a?q': 4, 'y??q': 3,
                     'y?bq': 3, 'ya?q': 3, 'yabq': 3}
