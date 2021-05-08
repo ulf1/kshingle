@@ -329,7 +329,7 @@ pip install git+ssh://git@github.com/ulf1/kshingle.git
 Install a virtual environment
 
 ```
-python3.6 -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt --no-cache-dir
