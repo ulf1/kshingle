@@ -1,5 +1,4 @@
 from typing import List, Optional
-import warnings
 
 
 def pad_shingle_sequence(seq: List[str],
