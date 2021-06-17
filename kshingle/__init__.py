@@ -1,4 +1,4 @@
-__version__ = '0.7.0'
+__version__ = '0.8.0'
 
 from .shingleseqs import (shingleseqs_k, shingleseqs_list, shingleseqs_range)
 from .shingleset import (shingleset_k, shingleset_range, shingleset_list)
@@ -11,5 +11,4 @@ from .cews import (
     expandshingle, cews, shingles_to_patterns, encode_with_patterns)
 
 # deprecated
-from .shingleseqs import (shingling_k, shingling_list, shingling_range)
 from .vocab import encoded_with_vocab

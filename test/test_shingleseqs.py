@@ -118,3 +118,135 @@ def test33():
 
     shingles = ks.shingleseqs_list("12345", [0, 3, 6])
     assert shingles == [['123', '234', '345'], []]  # this is a problem!
+
+
+def test41():
+    seqs = ks.shingleseqs_k(
+        "12345", k=6, padding='center', placeholder='x', evenpad='pre')
+    target = [
+        ['1', '2', '3', '4', '5'],
+        ['x', '12', '23', '34', '45'],
+        ['x', '123', '234', '345', 'x'],
+        ['x', 'x', '1234', '2345', 'x'],
+        ['x', 'x', '12345', 'x', 'x'],
+        ['x', 'x', 'x', 'x', 'x']]
+    assert seqs == target
+
+
+def test42():
+    seqs = ks.shingleseqs_k(
+        "12345", k=6, padding='center', placeholder='x', evenpad='post')
+    target = [
+        ['1', '2', '3', '4', '5'],
+        ['12', '23', '34', '45', 'x'],
+        ['x', '123', '234', '345', 'x'],
+        ['x', '1234', '2345', 'x', 'x'],
+        ['x', 'x', '12345', 'x', 'x'],
+        ['x', 'x', 'x', 'x', 'x']]
+    assert seqs == target
+
+
+def test43():
+    seqs = ks.shingleseqs_k(
+        "12345", k=6, padding='pre', placeholder='x')
+    target = [
+        ['1', '2', '3', '4', '5'],
+        ['x', '12', '23', '34', '45'],
+        ['x', 'x', '123', '234', '345'],
+        ['x', 'x', 'x', '1234', '2345'],
+        ['x', 'x', 'x', 'x', '12345'],
+        ['x', 'x', 'x', 'x', 'x']]
+    assert seqs == target
+
+
+def test44():
+    seqs = ks.shingleseqs_k(
+        "12345", k=6, padding='post', placeholder='x')
+    target = [
+        ['1', '2', '3', '4', '5'],
+        ['12', '23', '34', '45', 'x'],
+        ['123', '234', '345', 'x', 'x'],
+        ['1234', '2345', 'x', 'x', 'x'],
+        ['12345', 'x', 'x', 'x', 'x'],
+        ['x', 'x', 'x', 'x', 'x']]
+    assert seqs == target
+
+
+def test45():
+    seqs = ks.shingleseqs_range(
+        "12345", n_min=2, n_max=4, padding='center',
+        placeholder='x', evenpad='pre')
+    target = [
+        ['x', '12', '23', '34', '45'],
+        ['x', '123', '234', '345', 'x'],
+        ['x', 'x', '1234', '2345', 'x']]
+    assert seqs == target
+
+
+def test46():
+    seqs = ks.shingleseqs_range(
+        "12345", n_min=2, n_max=4, padding='center',
+        placeholder='x', evenpad='post')
+    target = [
+        ['12', '23', '34', '45', 'x'],
+        ['x', '123', '234', '345', 'x'],
+        ['x', '1234', '2345', 'x', 'x']]
+    assert seqs == target
+
+
+def test47():
+    seqs = ks.shingleseqs_range(
+        "12345", n_min=2, n_max=4, padding='pre', placeholder='x')
+    target = [
+        ['x', '12', '23', '34', '45'],
+        ['x', 'x', '123', '234', '345'],
+        ['x', 'x', 'x', '1234', '2345']]
+    assert seqs == target
+
+
+def test48():
+    seqs = ks.shingleseqs_range(
+        "12345", n_min=2, n_max=4, padding='post', placeholder='x')
+    target = [
+        ['12', '23', '34', '45', 'x'],
+        ['123', '234', '345', 'x', 'x'],
+        ['1234', '2345', 'x', 'x', 'x']]
+    assert seqs == target
+
+
+def test49():
+    seqs = ks.shingleseqs_list(
+        "12345", klist=[2, 5], padding='center',
+        placeholder='x', evenpad='pre')
+    target = [
+        ['x', '12', '23', '34', '45'],
+        ['x', 'x', '12345', 'x', 'x']]
+    assert seqs == target
+
+
+def test50():
+    seqs = ks.shingleseqs_list(
+        "12345", klist=[2, 5], padding='center',
+        placeholder='x', evenpad='post')
+    target = [
+        ['12', '23', '34', '45', 'x'],
+        ['x', 'x', '12345', 'x', 'x']]
+    assert seqs == target
+
+
+def test51():
+    seqs = ks.shingleseqs_list(
+        "12345", klist=[2, 5], padding='pre', placeholder='x')
+    target = [
+        ['x', '12', '23', '34', '45'],
+        ['x', 'x', 'x', 'x', '12345']]
+    assert seqs == target
+
+
+def test52():
+    seqs = ks.shingleseqs_list(
+        "12345", klist=[2, 5], padding='post', placeholder='x')
+    target = [
+        ['12', '23', '34', '45', 'x'],
+        ['12345', 'x', 'x', 'x', 'x']]
+    assert seqs == target
