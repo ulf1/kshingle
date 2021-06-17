@@ -130,6 +130,29 @@ shingles = ks.shingleseqs_list("aBc DeF", klist=[2, 5])
 ```
 
 
+### Padding
+The functions `shingleseqs_k`, `shingleseqs_range`, and `shingleseqs_list` can pad the sequence with a `placeholder` element. The `padding` modes are 
+
+- `center` : Pad on both sides (The `evenpad='pre' | 'post` parameter is only available for `padding='center'`, and applied on sequences with even `n`-shingles)
+- `pre` : Pad at the beginning of the sequence
+- `post` : Pad at the end of sequence
+
+
+```py
+import kshingle as ks
+shingles = ks.shingleseqs_list("1234567", k=5, padding='center', evenpad='pre', placeholder='x')
+[[f"{s:^5}" for s in seq] for seq in shingles]
+```
+
+```
+[['  1  ', '  2  ', '  3  ', '  4  ', '  5  ', '  6  ', '  7  '],
+ ['  x  ', ' 12  ', ' 23  ', ' 34  ', ' 45  ', ' 56  ', ' 67  '],
+ ['  x  ', ' 123 ', ' 234 ', ' 345 ', ' 456 ', ' 567 ', '  x  '],
+ ['  x  ', '  x  ', '1234 ', '2345 ', '3456 ', '4567 ', '  x  '],
+ ['  x  ', '  x  ', '12345', '23456', '34567', '  x  ', '  x  ']]
+```
+
+
 ### Identify Vocabulary of unique shingles
 
 ```py
@@ -198,25 +221,6 @@ klist = ks.shrink_k_backwards(encoded, unkid)
 shingled = [ks.shingleseqs_list(s, klist=klist) for s in data]
 encoded = encode_with_vocab(shingled, VOCAB, unkid)
 # ...
-```
-
-### Padding
-Padding should be done with Keras `pad_sequences`
-
-```py
-from tensorflow.keras.preprocessing.sequence import pad_sequences
-import torch
-import kshingle as ks
-
-# Add [PAD] token
-VOCAB, padidx = ks.upsert_word_to_vocab(VOCAB, "[PAD]")
-
-# Pad each example with Keras
-cfg = {'maxlen': 150, 'dtype': 'int32', 'padding': 'pre', 'truncating': 'pre', 'value': padidx}
-padded = [pad_sequences(ex, **cfg).transpose() for ex in encoded]
-
-# Convert to Pytorch
-padded = torch.LongTensor(padded)
 ```
 
 
@@ -329,7 +333,7 @@ pip install git+ssh://git@github.com/ulf1/kshingle.git
 Install a virtual environment
 
 ```
-python3.6 -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt --no-cache-dir
