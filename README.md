@@ -301,6 +301,10 @@ len(db2)
 import kshingle as ks
 memo = ks.cews(db2, threshold=0.9, min_count_split=10, max_wildcards=2)
 
+# ensure that certain shingles are in the memoization cache
+#memo = {k: db[k] for k in ["i.e.", "e.g."]}
+#memo = ks.cews(db2, memo=memo, threshold=0.9, min_count_split=10, max_wildcards=2)
+
 # Build a pattern list
 PATTERNS = ks.shingles_to_patterns(memo, wildcard="?")
 unkid = len(PATTERNS)

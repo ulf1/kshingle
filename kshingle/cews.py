@@ -143,59 +143,32 @@ def expandshingle(s: str,
         raise Exception(
             f"min_count_split={min_count_split} but must greater equal 1.")
 
-    # Part 1: Prefix/Suffix Wildcards
+    # (1a) Prefix/Suffix Wildcards
     # - Expand on the left side (prefix wildcard) and right side (suffix w.)
     # - This will lengthen the shingle by 1 character (k+1)
+    tmp = []
+    tmp.append(f"{wildcard}{s}")   # "_[shingle]"
+    tmp.append(f"{s}{wildcard}")   # "[shingle]_"
 
-    # (1a) Find all matches "_[shingle]" or "[shingle]_"
-    for snew in (f"{wildcard}{s}", f"{s}{wildcard}"):
-        reg = snew.replace(wildcard, r"\w{1}")
-        pat = re.compile(f"^{reg}$")
-        matches = list(filter(pat.match, db.keys()))
-
-        # (1b) Find and select the most frequent shingles
-        selected_shingles, residual_count = select_most_frequent_shingles(
-            matches, db, min_count_split, threshold)
-
-        # (1c) Assign the counts of the unselected shingles to the new
-        #   wildcard-shingle (`residual_count`), store it the database (`db`)
-        #   and memoization cache (`memo`), and traverse to the next knot
-        if residual_count >= min_count_split:
-            if snew not in memo:  # memoization trick
-                # db[snew] = total_count  # wegen infix
-                memo[snew] = residual_count
-                memo = expandshingle(snew, db=db, memo=memo,
-                                     wildcard=wildcard,
-                                     threshold=threshold,
-                                     min_count_split=min_count_split,
-                                     max_wildcards=max_wildcards)
-
-        # (1d) Store the selected shingles to the memoization cache (`memo`),
-        #   and trigger the next recursion step (traverse down the tree)
-        for key in selected_shingles:
-            if key not in memo:  # memoization trick
-                memo[key] = db[key]
-                memo = expandshingle(key, db=db, memo=memo,
-                                     wildcard=wildcard,
-                                     threshold=threshold,
-                                     min_count_split=min_count_split,
-                                     max_wildcards=max_wildcards)
-
-    # Part 2: Infix Wildcard
+    # (1b) Infix Wildcard
     # - Check all wildcard variants of a shingle.
     # - This will NOT expand the length of the shingles directly
-
     n_len = len(s)
     if n_len >= 3:
         # never replace 1st and last with wildcard ("1")
         # and avoid consequtive wildcards at the left and right end
         off_start = 1 + int(s[0] == wildcard)
         off_end = 1 + int(s[-1] == wildcard)
-
         # create each infix wildcard combination
         for i in range(off_start, n_len - off_end):
-            # (2a) Find all matches "[s1]_[s2]"
-            snew = f"{s[:i]}{wildcard}{s[(i + 1):]}"
+            # Find all matches "[s1]_[s2]"
+            tmp.append(f"{s[:i]}{wildcard}{s[(i + 1):]}")
+
+    # (2a) Find all matches
+    for snew in tmp:
+        # memoization trick
+        if snew not in memo:
+            # regex search
             reg = snew.replace(wildcard, r"\w{1}")
             pat = re.compile(f"^{reg}$")
             matches = list(filter(pat.match, db.keys()))
@@ -209,30 +182,31 @@ def expandshingle(s: str,
             #  (`db`) and memoization cache (`memo`), and traverse to the next
             #  knot
             if residual_count >= min_count_split:
-                if snew not in memo:  # memoization trick
-                    # db[snew] = total_count  # wegen infix
-                    memo[snew] = residual_count
-                    memo = expandshingle(snew, db=db, memo=memo,
-                                         wildcard=wildcard,
-                                         threshold=threshold,
-                                         min_count_split=min_count_split,
-                                         max_wildcards=max_wildcards)
+                memo[snew] = residual_count
+                memo = expandshingle(snew, db=db, memo=memo,
+                                     wildcard=wildcard,
+                                     threshold=threshold,
+                                     min_count_split=min_count_split,
+                                     max_wildcards=max_wildcards)
 
-            # (2d) Store selected shingles in the memoization cache (`memo`),
-            #   and call expandshingle (traverse down the tree)
-            for key in selected_shingles:
-                if key not in memo:  # memoization trick
-                    memo[key] = db[key]
-                    memo = expandshingle(key, db=db, memo=memo,
-                                         wildcard=wildcard,
-                                         threshold=threshold,
-                                         min_count_split=min_count_split,
-                                         max_wildcards=max_wildcards)
+                # (2d) Store the selected shingles to the memoization cache
+                #  (`memo`), and trigger the next recursion step (traverse
+                #  down the tree)
+                for key in selected_shingles:
+                    if key not in memo:  # memoization trick
+                        memo[key] = db[key]
+                        memo = expandshingle(key, db=db, memo=memo,
+                                             wildcard=wildcard,
+                                             threshold=threshold,
+                                             min_count_split=min_count_split,
+                                             max_wildcards=max_wildcards)
+
     # done
     return memo
 
 
 def cews(db: Dict[str, int],
+         memo: Optional[dict] = {},
          wildcard: Optional[str] = '\uFFFF',
          threshold: Optional[float] = 0.8,
          min_count_split: Optional[int] = 2,
@@ -249,6 +223,15 @@ def cews(db: Dict[str, int],
           - The database `db` is immutable.
           Preprocessing: Make sure that each shingle has a sufficient number of
             counts/frequencies, e.g. remove shingles that occur less than 20x.
+
+    memo: dict
+        Add specific shingles to the memoization cache to make sure that these
+          part of subword pattern list lateron. These shingles might certain
+          keywords, common stopwords, all chars, emojis, abbreviations.
+          Call the function as follows:
+            import kshingle as ks
+            memo = {k: db[k] for k in ["i.e.", "e.g."]}
+            memo = ks.cews(db, memo=memo)
 
     wildcard : str
         An unicode char that is not actually used by any natural language,
@@ -278,7 +261,6 @@ def cews(db: Dict[str, int],
           algorithm.
     """
     shingles = list(db.keys())
-    memo = {}
     for s in shingles:
         memo = expandshingle(
             s, db=db, memo=memo, wildcard=wildcard, threshold=threshold,
