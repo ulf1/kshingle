@@ -166,19 +166,22 @@ def expandshingle(s: str,
 
     # (2a) Find all matches
     for snew in tmp:
-        reg = snew.replace(wildcard, r"\w{1}")
-        pat = re.compile(f"^{reg}$")
-        matches = list(filter(pat.match, db.keys()))
+        # memoization trick
+        if snew not in memo:
+            # regex search
+            reg = snew.replace(wildcard, r"\w{1}")
+            pat = re.compile(f"^{reg}$")
+            matches = list(filter(pat.match, db.keys()))
 
-        # (2b) Find and select the most frequent shingles
-        selected_shingles, residual_count = select_most_frequent_shingles(
-            matches, db, min_count_split, threshold)
+            # (2b) Find and select the most frequent shingles
+            selected_shingles, residual_count = select_most_frequent_shingles(
+                matches, db, min_count_split, threshold)
 
-        # (2c) Assign the counts of the unselected shingles to the new
-        #   wildcard-shingle (`residual_count`), store it the database (`db`)
-        #   and memoization cache (`memo`), and traverse to the next knot
-        if residual_count >= min_count_split:
-            if snew not in memo:  # memoization trick
+            # (2c) Assign the counts of the unselected shingles to the new
+            #  wildcard-shingle (`residual_count`), store it the database
+            #  (`db`) and memoization cache (`memo`), and traverse to the next
+            #  knot
+            if residual_count >= min_count_split:
                 memo[snew] = residual_count
                 memo = expandshingle(snew, db=db, memo=memo,
                                      wildcard=wildcard,
@@ -186,16 +189,17 @@ def expandshingle(s: str,
                                      min_count_split=min_count_split,
                                      max_wildcards=max_wildcards)
 
-        # (2d) Store the selected shingles to the memoization cache (`memo`),
-        #   and trigger the next recursion step (traverse down the tree)
-        for key in selected_shingles:
-            if key not in memo:  # memoization trick
-                memo[key] = db[key]
-                memo = expandshingle(key, db=db, memo=memo,
-                                     wildcard=wildcard,
-                                     threshold=threshold,
-                                     min_count_split=min_count_split,
-                                     max_wildcards=max_wildcards)
+                # (2d) Store the selected shingles to the memoization cache
+                #  (`memo`), and trigger the next recursion step (traverse
+                #  down the tree)
+                for key in selected_shingles:
+                    if key not in memo:  # memoization trick
+                        memo[key] = db[key]
+                        memo = expandshingle(key, db=db, memo=memo,
+                                             wildcard=wildcard,
+                                             threshold=threshold,
+                                             min_count_split=min_count_split,
+                                             max_wildcards=max_wildcards)
 
     # done
     return memo
@@ -224,7 +228,7 @@ def cews(db: Dict[str, int],
         Add specific shingles to the memoization cache to make sure that these
           part of subword pattern list lateron. These shingles might certain
           keywords, common stopwords, all chars, emojis, abbreviations.
-          Call the function as follows: 
+          Call the function as follows:
             import kshingle as ks
             memo = {k: db[k] for k in ["i.e.", "e.g."]}
             memo = ks.cews(db, memo=memo)
