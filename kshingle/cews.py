@@ -202,6 +202,7 @@ def expandshingle(s: str,
 
 
 def cews(db: Dict[str, int],
+         memo: Optional[dict] = {},
          wildcard: Optional[str] = '\uFFFF',
          threshold: Optional[float] = 0.8,
          min_count_split: Optional[int] = 2,
@@ -218,6 +219,15 @@ def cews(db: Dict[str, int],
           - The database `db` is immutable.
           Preprocessing: Make sure that each shingle has a sufficient number of
             counts/frequencies, e.g. remove shingles that occur less than 20x.
+
+    memo: dict
+        Add specific shingles to the memoization cache to make sure that these
+          part of subword pattern list lateron. These shingles might certain
+          keywords, common stopwords, all chars, emojis, abbreviations.
+          Call the function as follows: 
+            import kshingle as ks
+            memo = {k: db[k] for k in ["i.e.", "e.g."]}
+            memo = ks.cews(db, memo=memo)
 
     wildcard : str
         An unicode char that is not actually used by any natural language,
@@ -247,7 +257,6 @@ def cews(db: Dict[str, int],
           algorithm.
     """
     shingles = list(db.keys())
-    memo = {}
     for s in shingles:
         memo = expandshingle(
             s, db=db, memo=memo, wildcard=wildcard, threshold=threshold,
