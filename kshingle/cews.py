@@ -162,7 +162,6 @@ def expandshingle(s: str,
         #   and memoization cache (`memo`), and traverse to the next knot
         if residual_count >= min_count_split:
             if snew not in memo:  # memoization trick
-                # db[snew] = total_count  # wegen infix
                 memo[snew] = residual_count
                 memo = expandshingle(snew, db=db, memo=memo,
                                      wildcard=wildcard,
@@ -210,7 +209,6 @@ def expandshingle(s: str,
             #  knot
             if residual_count >= min_count_split:
                 if snew not in memo:  # memoization trick
-                    # db[snew] = total_count  # wegen infix
                     memo[snew] = residual_count
                     memo = expandshingle(snew, db=db, memo=memo,
                                          wildcard=wildcard,
