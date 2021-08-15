@@ -272,8 +272,8 @@ def cews(db: Dict[str, int],
 
 @functools.cmp_to_key
 def sort_by_patterns(a, b):
-    """Comparision function for PATTERNS.sort 
-    
+    """Comparision function for PATTERNS.sort
+
     Example:
     --------
         PATTERNS.sort(key=sort_by_patterns)
@@ -287,8 +287,10 @@ def sort_by_patterns(a, b):
         return -1
     else:  # 0: a_wild == b_wild
         # (2) Prefer infix wildcards over suffix/prefix wildcards
-        a_infix = len([None for s in a.pattern[1:-1].split(r"\w{1}") if len(s) > 0]) - 1
-        b_infix = len([None for s in b.pattern[1:-1].split(r"\w{1}") if len(s) > 0]) - 1
+        a_infix = len(
+            [None for s in a.pattern[1:-1].split(r"\w{1}") if len(s) > 0]) - 1
+        b_infix = len(
+            [None for s in b.pattern[1:-1].split(r"\w{1}") if len(s) > 0]) - 1
         if a_infix < b_infix:
             return 1  # a is bad
         elif a_infix > b_infix:

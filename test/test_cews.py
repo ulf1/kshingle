@@ -99,4 +99,5 @@ def test7():
 def test8():
     memo = {"*a": 1, "a*b": 1, "a*": 1, "a": 1}
     PATTERNS = ks.shingles_to_patterns(memo, wildcard="*")
-    assert [p.pattern[1:-1] for p in PATTERNS] == ["a", "a\w{1}b", "\w{1}a", "a\w{1}"]
+    assert [p.pattern[1:-1] for p in PATTERNS] == [
+        "a", "a\\w{1}b", "\\w{1}a", "a\\w{1}"]
