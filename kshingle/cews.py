@@ -1,5 +1,6 @@
 import re
 from typing import Optional, Dict, List, Union
+import functools
 
 
 def select_most_frequent_shingles(matches: List[str],
@@ -269,6 +270,49 @@ def cews(db: Dict[str, int],
     return memo
 
 
+@functools.cmp_to_key
+def sort_by_patterns(a, b):
+    """Comparision function for PATTERNS.sort
+
+    Example:
+    --------
+        PATTERNS.sort(key=sort_by_patterns)
+    """
+    # (1) Prefer exact matches (no wildcards) or resp. less wilcards
+    a_wild = len(a.pattern.split(r"\w{1}")) - 1
+    b_wild = len(b.pattern.split(r"\w{1}")) - 1
+    if a_wild > b_wild:
+        return 1  # a is bad
+    elif a_wild < b_wild:
+        return -1
+    else:  # 0: a_wild == b_wild
+        # (2) Prefer infix wildcards over suffix/prefix wildcards
+        a_infix = len(
+            [None for s in a.pattern[1:-1].split(r"\w{1}") if len(s) > 0]) - 1
+        b_infix = len(
+            [None for s in b.pattern[1:-1].split(r"\w{1}") if len(s) > 0]) - 1
+        if a_infix < b_infix:
+            return 1  # a is bad
+        elif a_infix > b_infix:
+            return -1
+        else:  # 0: a_infix == b_infix
+            # (3) Prefer short len
+            a_len = len(a.pattern)
+            b_len = len(b.pattern)
+            if a_len > b_len:
+                return 1
+            elif a_len < b_len:
+                return -1
+            else:
+                # (4) Alphabetic
+                if a.pattern > b.pattern:
+                    return 1
+                elif a.pattern < b.pattern:
+                    return -1
+                else:
+                    return 0
+
+
 def shingles_to_patterns(memo: Dict[str, int],
                          wildcard: Optional[str] = '\uFFFF'
                          ) -> list:  # List[re.Pattern]
@@ -299,6 +343,7 @@ def shingles_to_patterns(memo: Dict[str, int],
         reg = s.replace(wildcard, r"\w{1}")
         pat = re.compile(f"^{reg}$")
         PATTERNS.append(pat)
+    PATTERNS.sort(key=sort_by_patterns)
     return PATTERNS
 
 
