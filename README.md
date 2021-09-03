@@ -3,7 +3,6 @@
 [![kshingle](https://snyk.io/advisor/python/kshingle/badge.svg)](https://snyk.io/advisor/python/kshingle)
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/ulf1/kshingle.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/ulf1/kshingle/alerts/)
 [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/ulf1/kshingle.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/ulf1/kshingle/context:python)
-[![deepcode](https://www.deepcode.ai/api/gh/badge?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwbGF0Zm9ybTEiOiJnaCIsIm93bmVyMSI6InVsZjEiLCJyZXBvMSI6ImtzaGluZ2xlIiwiaW5jbHVkZUxpbnQiOmZhbHNlLCJhdXRob3JJZCI6Mjk0NTIsImlhdCI6MTYxOTUzNzc4NX0._uaK3UtRr5uV_OB_h1ruFROke3yFImNrJZTRP8KSf_o)](https://www.deepcode.ai/app/gh/ulf1/kshingle/_/dashboard?utm_content=gh%2Fulf1%2Fkshingle)
 
 # kshingle
 Utility functions to split a string into character-level k-shingles, shingle sets, sequences of k-shingles.
