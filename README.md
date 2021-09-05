@@ -91,6 +91,14 @@ for s in s2:
 m1.jaccard(m2)
 ```
 
+
+### Utility functions
+```py
+import kshingle as ks
+metric = ks.jaccard_strings("Bericht", "berichten", k=5)
+# 0.5128205128205128
+```
+
 ### References
 - A. Z. Broder, “On the resemblance and containment of documents,” in Proceedings. Compression and Complexity of SEQUENCES 1997 (Cat. No.97TB100171), Salerno, Italy, 1998, pp. 21–29, doi: [10.1109/SEQUEN.1997.666900](https://doi.org/10.1109/SEQUEN.1997.666900)
 - Ch. 3 in: J. Leskovec, A. Rajaraman, and J. D. Ullman, Mining of Massive Datasets, 2nd ed. Cambridge: Cambridge University Press, 2014. URL: [http://infolab.stanford.edu/~ullman/mmds/book.pdf](http://infolab.stanford.edu/~ullman/mmds/book.pdf)
