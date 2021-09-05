@@ -263,7 +263,7 @@ def cews(db: Dict[str, int],
     """
     # add single-chars to memo automatically
     if len(memo) == 0:
-        memo = {k:v for k,v in db.items() if len(k)==1}
+        memo = {k: v for k, v in db.items() if len(k) == 1}
     # loop over all db entries
     shingles = list(db.keys())
     for s in shingles:
