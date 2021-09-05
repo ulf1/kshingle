@@ -4,6 +4,18 @@ from .wildcard import wildcard_shinglesets
 
 
 def jaccard(A: set, B: set) -> float:
+    """Jaccard Similarity Coefficient or Intersection over Union
+
+    Parameters:
+    -----------
+    A, B : set
+        Sets of unique shingles
+    
+    Return:
+    -------
+    metric : float
+        The Jaccard Similarity Coefficient
+    """
     u = float(len(A.intersection(B)))
     return u / (len(A) + len(B) - u)
 
