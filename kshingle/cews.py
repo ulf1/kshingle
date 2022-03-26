@@ -170,7 +170,8 @@ def expandshingle(s: str,
         # memoization trick
         if snew not in memo:
             # regex search
-            reg = re.escape(snew).replace(wildcard, r"\w{1}")
+            # reg = re.escape(snew).replace(wildcard, r"\w{1}")
+            reg = r"\w{1}".join([re.escape(s) for s in snew.split(wildcard)])
             pat = re.compile(f"^{reg}$")
             matches = list(filter(pat.match, db.keys()))
 
