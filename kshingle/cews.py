@@ -85,7 +85,7 @@ def select_most_frequent_shingles(matches: List[str],
 
 def expandshingle(s: str,
                   db: Dict[str, int],
-                  memo: Optional[dict] = {},
+                  memo: Optional[dict],
                   wildcard: Optional[str] = '\uFFFF',
                   threshold: Optional[float] = 0.8,
                   min_count_split: Optional[int] = 2,
