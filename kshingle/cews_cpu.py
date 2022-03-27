@@ -26,7 +26,7 @@ def cews_cpu(db: Dict[str, int],
              min_count_split: Optional[int] = 2,
              max_wildcards: Optional[int] = 3):
     # Start ray.io
-    NUM_CPUS = max(1, int(psutil.cpu_count(logical=False) * 0.9))
+    NUM_CPUS = max(1, int(psutil.cpu_count(logical=True) * 0.9))
     ray.init(num_cpus=NUM_CPUS)
     print(f"Num CPUs: {NUM_CPUS}")
 
