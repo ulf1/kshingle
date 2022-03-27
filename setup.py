@@ -28,7 +28,8 @@ setup(name='kshingle',
       license='Apache License 2.0',
       packages=['kshingle'],
       install_requires=[
-          'numba>=0.52.0'
+          'numba>=0.52.0',
+          'ray>=1.11.0,<2'
       ],
       python_requires='>=3.6',
       zip_safe=True)
