@@ -1,3 +1,4 @@
 # public packages (see setup.py)
 numba>=0.52.0
 ray>=1.11.0,<2
+psutil>=5.9.0,<1
