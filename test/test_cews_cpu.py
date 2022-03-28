@@ -8,7 +8,7 @@ from collections import Counter
 def test4b():
     db = {"qar": 2, "qbr": 3, "qcr": 4, "qdr": 5, "qer": 6, "qfr": 7}
     memo = ks.cews_cpu(
-        db, wildcard="?", threshold=.8, min_count_split=1, max_wildcards=1)
+        db, wildcard="?", threshold=.8, min_samples_split=1, max_wildcards=1)
     assert memo == {'q?r': 9, 'qdr': 5, 'qer': 6, 'qfr': 7}
 
 
@@ -26,7 +26,8 @@ def test7():
     # run CEWS algorithm
     db = functools.reduce(lambda x, y: x + Counter(itertools.chain(*y)),
                           shingled, Counter([]))
-    memo = ks.cews_cpu(db, threshold=0.8, min_count_split=10, max_wildcards=2)
+    memo = ks.cews_cpu(
+        db, threshold=0.8, min_samples_split=10, max_wildcards=2)
     # encode shingles with patterns
     PATTERNS = ks.shingles_to_patterns(memo)
     encoded = ks.encode_with_patterns(shingled, PATTERNS, len(PATTERNS))

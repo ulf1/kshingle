@@ -1,11 +1,13 @@
 import re
 from typing import Optional, Dict, List, Union
 import functools
+import numpy as np
 
 
 def select_most_frequent_shingles(matches: List[str],
                                   db: Dict[str, int],
-                                  min_count_split: int,
+                                  min_samples_split: int,
+                                  min_samples_leaf: int,
                                   threshold: float):
     """Select the most frequent shingles that matches the wildcard shingle
 
@@ -24,14 +26,17 @@ def select_most_frequent_shingles(matches: List[str],
           Preprocessing: Make sure that each shingle has a sufficient number of
             counts/frequencies, e.g. remove shingles that occur less than 20x.
 
-    threshold: float (Default: 0.80)
-        Replace max. `1.0 - threshold` of the least frequent shingles with
-          the wildcard shingle.
-
-    min_count_split: int (Default: 2)
+    min_samples_split: int (Default: 2)
         If the combined frequency of all shingles covered by one wildcard
           shingle (count sum of the regex query results) is less than the
           specified minimum total frequency, then the recursion aborts.
+
+    min_samples_leaf: int (Default: 1)
+        Required number of counts in `db` to be added to the memo cached
+
+    threshold: float (Default: 0.80)
+        Replace max. `1.0 - threshold` of the least frequent shingles with
+          the wildcard shingle.
 
     Returns:
     --------
@@ -45,7 +50,7 @@ def select_most_frequent_shingles(matches: List[str],
     Example:
     --------
         selected_shingles, residual_count = select_most_frequent_shingles(
-            matches, db, min_count_split, threshold)
+            matches, db, min_samples_split, min_samples_leaf, threshold)
     """
     # read only matches
     candidates = [item for item in db.items() if item[0] in matches]
@@ -62,7 +67,7 @@ def select_most_frequent_shingles(matches: List[str],
     # compute total counts
     total = sum([val for _, val in candidates])
 
-    if total < min_count_split:
+    if total < min_samples_split:
         return [], total
 
     # find most frequent (`val`) shingles (`key`) up to 90% of all matches
@@ -71,13 +76,14 @@ def select_most_frequent_shingles(matches: List[str],
     cumcnt = 0
     selected = []
     for key, val in candidates[:-1]:
-        # abort if the sum of selected shingles reached threshold
-        cumpct += val / total
-        if cumpct > threshold:
-            break
-        # select shingle
-        cumcnt += val
-        selected.append(key)
+        if val >= min_samples_leaf:
+            # abort if the sum of selected shingles reached threshold
+            cumpct += val / total
+            if cumpct > threshold:
+                break
+            # select shingle
+            cumcnt += val
+            selected.append(key)
 
     # done
     return selected, total - cumcnt
@@ -87,9 +93,10 @@ def expandshingle(s: str,
                   db: Dict[str, int],
                   memo: Optional[dict],
                   wildcard: Optional[str] = '\uFFFF',
-                  threshold: Optional[float] = 0.8,
-                  min_count_split: Optional[int] = 2,
-                  max_wildcards: Optional[int] = 3):
+                  max_wildcards: Optional[int] = 1,
+                  min_samples_split: Optional[int] = 2,
+                  min_samples_leaf: Optional[int] = 1,
+                  threshold: Optional[float] = 0.8):
     """Recursive algorithm to select given k-shingles
 
     Parameters:
@@ -118,18 +125,21 @@ def expandshingle(s: str,
           or the text that you analyzing, e.g. U+FFFE or U+FFFF
           See https://en.wikipedia.org/wiki/Specials_(Unicode_block)
 
-    threshold: float (Default: 0.80)
-        Replace max. `1.0 - threshold` of the least frequent shingles with
-          the wildcard shingle.
+    max_wildcards: int (Default: 1)
+        If an input string `s` contains more than the specified maximum
+          number of wildcard characters, the recursion aborts.
 
-    min_count_split: int (Default: 2)
+    min_samples_split: int (Default: 2)
         If the combined frequency of all shingles covered by one wildcard
           shingle (count sum of the regex query results) is less than the
           specified minimum total frequency, then the recursion aborts.
 
-    max_wildcards: int (Default: 3)
-        If an input string `s` contains more than the specified maximum
-          number of wildcard characters, the recursion aborts.
+    min_samples_leaf: int (Default: 1)
+        Required number of counts in `db` to be added to the memo cached
+
+    threshold: float (Default: 0.80)
+        Replace max. `1.0 - threshold` of the least frequent shingles with
+          the wildcard shingle.
 
     Returns:
     --------
@@ -140,9 +150,9 @@ def expandshingle(s: str,
     if s.count(wildcard) >= max_wildcards:
         return memo
     # (0b) abort
-    if min_count_split < 1:
+    if min_samples_split < 1:
         raise Exception(
-            f"min_count_split={min_count_split} but must greater equal 1.")
+            f"min_samples_split={min_samples_split} but must greater equal 1.")
 
     # (1a) Prefix/Suffix Wildcards
     # - Expand on the left side (prefix wildcard) and right side (suffix w.)
@@ -177,19 +187,21 @@ def expandshingle(s: str,
 
             # (2b) Find and select the most frequent shingles
             selected_shingles, residual_count = select_most_frequent_shingles(
-                matches, db, min_count_split, threshold)
+                matches, db, min_samples_split, min_samples_leaf, threshold)
 
             # (2c) Assign the counts of the unselected shingles to the new
             #  wildcard-shingle (`residual_count`), store it the database
             #  (`db`) and memoization cache (`memo`), and traverse to the next
             #  knot
-            if residual_count >= min_count_split:
+            if residual_count >= min_samples_split:
                 memo[snew] = residual_count
-                memo = expandshingle(snew, db=db, memo=memo,
-                                     wildcard=wildcard,
-                                     threshold=threshold,
-                                     min_count_split=min_count_split,
-                                     max_wildcards=max_wildcards)
+                memo = expandshingle(
+                    snew, db=db, memo=memo,
+                    wildcard=wildcard,
+                    max_wildcards=max_wildcards,
+                    min_samples_split=min_samples_split,
+                    min_samples_leaf=min_samples_leaf,
+                    threshold=threshold)
 
                 # (2d) Store the selected shingles to the memoization cache
                 #  (`memo`), and trigger the next recursion step (traverse
@@ -197,12 +209,13 @@ def expandshingle(s: str,
                 for key in selected_shingles:
                     if key not in memo:  # memoization trick
                         memo[key] = db[key]
-                        memo = expandshingle(key, db=db, memo=memo,
-                                             wildcard=wildcard,
-                                             threshold=threshold,
-                                             min_count_split=min_count_split,
-                                             max_wildcards=max_wildcards)
-
+                        memo = expandshingle(
+                            key, db=db, memo=memo,
+                            wildcard=wildcard,
+                            max_wildcards=max_wildcards,
+                            min_samples_split=min_samples_split,
+                            min_samples_leaf=min_samples_leaf,
+                            threshold=threshold)
     # done
     return memo
 
@@ -210,9 +223,11 @@ def expandshingle(s: str,
 def cews(db: Dict[str, int],
          memo: Optional[dict] = {},
          wildcard: Optional[str] = '\uFFFF',
+         max_wildcards: Optional[int] = 1,
+         min_samples_split: Optional[int] = 2,
+         min_samples_leaf: Optional[int] = 1,
          threshold: Optional[float] = 0.8,
-         min_count_split: Optional[int] = 2,
-         max_wildcards: Optional[int] = 3):
+         approx_vocab_size: Optional[int] = None):
     """Collectively Exhaustive Wildcard Shingling (CEWS)
 
     Parameters:
@@ -240,18 +255,25 @@ def cews(db: Dict[str, int],
           or the text that you analyzing, e.g. U+FFFE or U+FFFF
           See https://en.wikipedia.org/wiki/Specials_(Unicode_block)
 
-    threshold: float (Default: 0.80)
-        Replace max. `1.0 - threshold` of the least frequent shingles with
-          the wildcard shingle.
+    max_wildcards: int (Default: 1)
+        If an input string `s` contains more than the specified maximum
+          number of wildcard characters, the recursion aborts.
 
-    min_count_split: int (Default: 2)
+    min_samples_split: int (Default: 2)
         If the combined frequency of all shingles covered by one wildcard
           shingle (count sum of the regex query results) is less than the
           specified minimum total frequency, then the recursion aborts.
 
-    max_wildcards: int (Default: 3)
-        If an input string `s` contains more than the specified maximum
-          number of wildcard characters, the recursion aborts.
+    min_samples_leaf: int (Default: 1)
+        Required number of counts in `db` to be added to the memo cached
+
+    threshold: float (Default: 0.80)
+        Replace max. `1.0 - threshold` of the least frequent shingles with
+          the wildcard shingle.
+
+    approx_vocab_size: int (Default: None)
+        If set, then `min_samples_leaf` is approximated by `approx_vocab_size`
+          and `db.values()`
 
     Return:
     -------
@@ -265,12 +287,40 @@ def cews(db: Dict[str, int],
     # add single-chars to memo automatically
     if len(memo) == 0:
         memo = {k: v for k, v in db.items() if len(k) == 1}
+
+    # sort shingles by frequency
+    db_list = list(db.items())
+    db_list = sorted(db_list, key=lambda item: -item[1])
+
+    # approximate `min_samples_leaf` with `approx_vocab_size`
+    if approx_vocab_size:
+        idx = min(len(db_list) - 1, approx_vocab_size * 2)
+        min_samples_leaf = int(max(1, db_list[idx][1]))
+        min_samples_split = int(2 * min_samples_leaf)
+
+    # if `min_samples_leaf` is float
+    if isinstance(min_samples_leaf, float) and (0.0 < min_samples_leaf <= 1.0):
+        cnts = np.array([c for _, c in db_list])
+        mask = (cnts / np.sum(cnts)) > min_samples_leaf
+        if mask.any():
+            min_samples_leaf = int(cnts[mask][-1])
+            min_samples_split = int(2 * min_samples_leaf)
+        else:
+            min_samples_leaf, min_samples_split = 1, 2
+
+    # only shingles with at least `min_samples_leaf` counts
+    shingles = [s for s, c in db_list if c >= min_samples_leaf]
+    # shingles = [s for s, _ in db_list]
+
     # loop over all db entries
-    shingles = list(db.keys())
     for s in shingles:
         memo = expandshingle(
-            s, db=db, memo=memo, wildcard=wildcard, threshold=threshold,
-            min_count_split=min_count_split, max_wildcards=max_wildcards)
+            s, db=db, memo=memo,
+            wildcard=wildcard,
+            max_wildcards=max_wildcards,
+            min_samples_split=min_samples_split,
+            min_samples_leaf=min_samples_leaf,
+            threshold=threshold)
     # done
     return memo
 
