@@ -17,8 +17,8 @@ def ray_expandshingle(s: str,
                       threshold: Optional[float] = 0.8):
     """ Ray.io wrapper for ks.expandshingle """
     return expandshingle(
-        s, db=db, memo=memo, 
-        wildcard=wildcard, 
+        s, db=db, memo=memo,
+        wildcard=wildcard,
         max_wildcards=max_wildcards,
         min_samples_split=min_samples_split,
         min_samples_leaf=min_samples_leaf,
@@ -71,7 +71,7 @@ def cews_cpu(db: Dict[str, int],
         tmp_memos = []
         for s in shingles[start:(start + NUM_CPUS)]:
             tmp_memos.append(ray_expandshingle.remote(
-                s, db=db, memo=memo, 
+                s, db=db, memo=memo,
                 wildcard=wildcard,
                 max_wildcards=max_wildcards,
                 min_samples_split=min_samples_split,

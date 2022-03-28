@@ -26,7 +26,8 @@ def test7():
     # run CEWS algorithm
     db = functools.reduce(lambda x, y: x + Counter(itertools.chain(*y)),
                           shingled, Counter([]))
-    memo = ks.cews_cpu(db, threshold=0.8, min_samples_split=10, max_wildcards=2)
+    memo = ks.cews_cpu(
+        db, threshold=0.8, min_samples_split=10, max_wildcards=2)
     # encode shingles with patterns
     PATTERNS = ks.shingles_to_patterns(memo)
     encoded = ks.encode_with_patterns(shingled, PATTERNS, len(PATTERNS))
