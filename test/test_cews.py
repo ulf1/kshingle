@@ -10,7 +10,7 @@ def test1():
     shingle = "a"
     memo = ks.expandshingle(
         shingle, db=db, memo={}, wildcard="?", threshold=1.0,
-        min_count_split=1, max_wildcards=0)
+        min_samples_split=1, max_wildcards=0)
     assert memo == {}
 
 
@@ -19,13 +19,13 @@ def test2():
     shingle = "a"
     memo = ks.expandshingle(
         shingle, db=db, memo={}, wildcard="?", threshold=1.0,
-        min_count_split=1, max_wildcards=1)
+        min_samples_split=1, max_wildcards=1)
     assert memo == {'a?': 3, 'ac': 4, 'ad': 5}
 
 
 def test3():
     with pytest.raises(Exception):
-        ks.expandshingle("a", db={}, memo={}, min_count_split=0)
+        ks.expandshingle("a", db={}, memo={}, min_samples_split=0)
 
 
 def test4():
@@ -33,14 +33,14 @@ def test4():
     shingle = "qar"
     memo = ks.expandshingle(
         shingle, db=db, memo={}, wildcard="?", threshold=.8,
-        min_count_split=1, max_wildcards=1)
+        min_samples_split=1, max_wildcards=1)
     assert memo == {'q?r': 9, 'qdr': 5, 'qer': 6, 'qfr': 7}
 
 
 def test4b():
     db = {"qar": 2, "qbr": 3, "qcr": 4, "qdr": 5, "qer": 6, "qfr": 7}
     memo = ks.cews(
-        db, wildcard="?", threshold=.8, min_count_split=1, max_wildcards=1)
+        db, wildcard="?", threshold=.8, min_samples_split=1, max_wildcards=1)
     assert memo == {'q?r': 9, 'qdr': 5, 'qer': 6, 'qfr': 7}
 
 
@@ -49,7 +49,7 @@ def test5():
     shingle = "ab"
     memo = ks.expandshingle(
         shingle, db=db, memo={}, wildcard="?", threshold=1,
-        min_count_split=1, max_wildcards=2)
+        min_samples_split=1, max_wildcards=2)
     assert memo == {'a?r': 5, 'ab?': 4, 'abr': 5}
 
 
@@ -58,7 +58,7 @@ def test6():
     shingle = "ab"
     memo = ks.expandshingle(
         shingle, db=db, memo={}, wildcard="?", threshold=1,
-        min_count_split=1, max_wildcards=2)
+        min_samples_split=1, max_wildcards=2)
     assert memo == {'ab?': 4, '?ab?': 2, 'y??q': 3,
                     'y?bq': 3, 'ya?q': 3, 'yabq': 3}
 
@@ -66,7 +66,7 @@ def test6():
 # def test6b():
 #     db = {"ab": 2, "abq": 4, "xabq": 2, "yabq": 3}
 #     memo = ks.cews(
-#         db, wildcard="?", threshold=.8, min_count_split=3, max_wildcards=3)
+#         db, wildcard="?", threshold=.8, min_samples_split=3, max_wildcards=3)
 #     assert memo == {'ab?': 4, 'a?q': 4, 'y?bq': 3, 'y??q': 3, 'ya?q': 3}
 
 
@@ -84,7 +84,7 @@ def test7():
     # run CEWS algorithm
     db = functools.reduce(lambda x, y: x + Counter(itertools.chain(*y)),
                           shingled, Counter([]))
-    memo = ks.cews(db, threshold=0.8, min_count_split=10, max_wildcards=2)
+    memo = ks.cews(db, threshold=0.8, min_samples_split=10, max_wildcards=2)
     # encode shingles with patterns
     PATTERNS = ks.shingles_to_patterns(memo)
     encoded = ks.encode_with_patterns(shingled, PATTERNS, len(PATTERNS))

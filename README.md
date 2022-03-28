@@ -16,7 +16,7 @@ The package `kshingle` can be deployed for the following use cases:
 ## Install package
 
 ```sh
-pip install "kshingle>=0.8.6"
+pip install "kshingle>=0.9.0"
 ```
 
 
@@ -255,6 +255,7 @@ for doc in docs:
     db += Counter(itertools.chain(*shingles))
 
 db = dict(db)
+len(db)
 ```
 
 ### Extra: Augment text by adding typological errors
@@ -306,14 +307,20 @@ len(db2)
 ```py
 # use `db` or `db2` (see above)
 import kshingle as ks
-memo = ks.cews(db2, threshold=0.9, min_count_split=10, max_wildcards=2)
+memo = ks.cews(db2, max_wildcards=1, min_samples_leaf=10, threshold=0.9)
 
 # ensure that certain shingles are in the memoization cache
 #memo = {k: db[k] for k in ["i.e.", "e.g."]}
-#memo = ks.cews(db2, memo=memo, threshold=0.9, min_count_split=10, max_wildcards=2)
+#memo = ks.cews(db2, memo=memo, max_wildcards=1, min_samples_leaf=10, threshold=0.9)
+
+# try to stop early when reaching a target vocab size
+#memo = ks.cews(db2, max_wildcards=1, approx_vocab_size=500, threshold=0.9)
+
+# `min_samples_leaf` as pecentage
+#memo = ks.cews(db2, max_wildcards=1, min_samples_leaf=0.0005, threshold=0.9)
 
 # Build a pattern list
-PATTERNS = ks.shingles_to_patterns(memo, wildcard="?")
+PATTERNS = ks.shingles_to_patterns(memo, wildcard='\uFFFF')
 unkid = len(PATTERNS)
 ```
 
