@@ -101,3 +101,30 @@ def test8():
     PATTERNS = ks.shingles_to_patterns(memo, wildcard="*")
     assert [p.pattern[1:-1] for p in PATTERNS] == [
         "a", "a\\w{1}b", "\\w{1}a", "a\\w{1}"]
+
+
+def test7():
+    # rare edge cases
+    k = 5
+    docs = [
+        "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam ",
+        "nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam ",
+        "erat, sed diam voluptua. At vero eos et accusam et justo duo ",
+        "dolores et ea rebum. Stet clita kasd gubergren, no sea takimata "]
+    # generate all shingles
+    shingled = [ks.shingleseqs_k(doc, k=k) for doc in docs]
+    assert len(shingled) == len(docs)
+    assert len(shingled[0]) == k
+    # run CEWS algorithm
+    db = functools.reduce(lambda x, y: x + Counter(itertools.chain(*y)),
+                          shingled, Counter([]))
+    memo = ks.cews(
+        db, max_wildcards=1, min_samples_leaf=0.0005, 
+        threshold=0.9)
+    memo = ks.cews(
+        db, max_wildcards=1, vocab_size=500, 
+        min_samples_leaf='auto', threshold=0.9)
+    memo = ks.cews(
+        db, max_wildcards=1, priority='rare', 
+        min_samples_leaf=1, threshold=0.9)
+

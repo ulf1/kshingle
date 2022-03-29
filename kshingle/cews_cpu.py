@@ -29,10 +29,11 @@ def cews_cpu(db: Dict[str, int],
              memo: Optional[dict] = {},
              wildcard: Optional[str] = '\uFFFF',
              max_wildcards: Optional[int] = 1,
-             min_samples_split: Optional[int] = 2,
+             min_samples_split: Optional[int] = None,
              min_samples_leaf: Optional[int] = 1,
              threshold: Optional[float] = 0.8,
-             approx_vocab_size: Optional[int] = None):
+             priority: Optional[str] = 'common',
+             vocab_size: Optional[int] = None):
     # Start ray.io
     NUM_CPUS = max(1, int(psutil.cpu_count(logical=True) * 0.9))
     ray.init(num_cpus=NUM_CPUS)
@@ -46,11 +47,10 @@ def cews_cpu(db: Dict[str, int],
     db_list = list(db.items())
     db_list = sorted(db_list, key=lambda item: -item[1])
 
-    # approximate `min_samples_leaf` with `approx_vocab_size`
-    if approx_vocab_size:
-        idx = min(len(db_list) - 1, approx_vocab_size)
+    # approximate `min_samples_leaf` with `vocab_size`
+    if (min_samples_leaf == 'auto') and (vocab_size is not None):
+        idx = min(len(db_list) - 1, vocab_size)
         min_samples_leaf = int(max(1, db_list[idx][1]))
-        min_samples_split = int(2 * min_samples_leaf)
 
     # if `min_samples_leaf` is float
     if isinstance(min_samples_leaf, float) and (0.0 < min_samples_leaf <= 1.0):
@@ -58,16 +58,29 @@ def cews_cpu(db: Dict[str, int],
         mask = (cnts / np.sum(cnts)) > min_samples_leaf
         if mask.any():
             min_samples_leaf = int(cnts[mask][-1])
-            min_samples_split = int(2 * min_samples_leaf)
         else:
-            min_samples_leaf, min_samples_split = 1, 2
+            min_samples_leaf = 1
+
+    # check threshold
+    assert threshold is not None
+    assert (0.0 < threshold <= 1.0)
+
+    # set `min_samples_split`
+    if min_samples_split is None:
+        min_samples_split = max(2, int(min_samples_leaf / threshold))
 
     # only shingles with at least `min_samples_leaf` counts
-    shingles = [s for s, c in db_list if c >= min_samples_leaf]
-    # shingles = [s for s, _ in db_list]
+    if priority == 'rare':
+        shingles = [s for s, _ in db_list]
+        shingles.reverse()
+    elif (priority == 'common') and (vocab_size is not None):
+        shingles = [s for s, c in db_list if c >= min_samples_leaf]
+    else:  # priority == 'common'
+        shingles = [s for s, _ in db_list]
 
     # start parallel searches
     for start in range(0, len(shingles), NUM_CPUS):
+        # run trees in parallel
         tmp_memos = []
         for s in shingles[start:(start + NUM_CPUS)]:
             tmp_memos.append(ray_expandshingle.remote(
@@ -77,9 +90,15 @@ def cews_cpu(db: Dict[str, int],
                 min_samples_split=min_samples_split,
                 min_samples_leaf=min_samples_leaf,
                 threshold=threshold))
+        # collect results
         tmp_memos = ray.get(tmp_memos)
         for m in tmp_memos:
             memo.update(m)
+        # early stopping
+        if vocab_size is not None:
+            if len(memo) >= vocab_size:
+                break
+
     # stop ray
     ray.shutdown()
     # done
