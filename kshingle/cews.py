@@ -269,7 +269,7 @@ def cews(db: Dict[str, int],
     min_samples_leaf: int (Default: 1)
         Required number of counts in `db` to be added to the memo cached.
         `min_samples_leaf` is estimated from `db` if
-        - it's a `float` between [0,1] 
+        - it's a `float` between [0,1]
         - `min_samples_leaf='auto'` and `vocab_size` is set
 
     threshold: float (Default: 0.80)
@@ -277,12 +277,12 @@ def cews(db: Dict[str, int],
           the wildcard shingle.
 
     priority: str (Default: 'common')
-        The order in which to process the shingles. 
+        The order in which to process the shingles.
         - 'common', start with the most frequent shingles. Use this setting
             when specifying high `min_samples_leaf` and/or `vocab_size` to get
             reduce the compute time
         - 'rare', start with less frequent shingles. Use this setting when
-            when specifying low `min_samples_leaf=1` and not limiting the 
+            when specifying low `min_samples_leaf=1` and not limiting the
             vocab size.
 
     vocab_size: int (Default: None)
