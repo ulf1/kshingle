@@ -423,9 +423,13 @@ def shingles_to_patterns(memo: Dict[str, int],
         The regex.compile patterns based on the selected shingles in the
           memoization cache.
     """
+    if isinstance(memo, dict):
+        shingles = memo.keys()
+    elif isinstance(memo, (list, tuple)):
+        shingles = memo.copy()
     PATTERNS = []
-    for s in memo.keys():
-        reg = s.replace(wildcard, r"\w{1}")
+    for shingle in shingles:
+        reg = r"\w{1}".join([re.escape(s) for s in shingle.split(wildcard)])
         pat = re.compile(f"^{reg}$")
         PATTERNS.append(pat)
     PATTERNS.sort(key=sort_by_patterns)

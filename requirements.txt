@@ -1,4 +1,5 @@
 # public packages (see setup.py)
-numba>=0.52.0
+numba>=0.52.0,<1
+numpy>=1.19.0,<2
 ray>=1.11.0,<2
 psutil>=5.9.0,<6

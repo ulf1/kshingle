@@ -1,4 +1,4 @@
-__version__ = '0.9.1'
+__version__ = '0.9.2'
 
 from .shingleseqs import (shingleseqs_k, shingleseqs_list, shingleseqs_range)
 from .shingleset import (shingleset_k, shingleset_range, shingleset_list)
