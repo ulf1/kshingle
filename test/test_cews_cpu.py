@@ -30,7 +30,7 @@ def test7():
         db, threshold=0.8, min_samples_split=10, max_wildcards=2)
     # encode shingles with patterns
     PATTERNS = ks.shingles_to_patterns(memo)
-    encoded = ks.encode_with_patterns(shingled, PATTERNS, len(PATTERNS))
+    encoded = ks.encode_with_patterns_cpu(shingled, PATTERNS, len(PATTERNS))
     assert len(PATTERNS) == len(memo)
     assert len(encoded) == len(shingled)
     for i in range(len(encoded)):
