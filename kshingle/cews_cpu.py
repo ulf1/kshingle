@@ -2,7 +2,7 @@ import ray
 import psutil
 import random
 from .cews import expandshingle
-from typing import Optional, Dict
+from typing import Optional, Dict, Union
 import numpy as np
 
 
@@ -103,3 +103,56 @@ def cews_cpu(db: Dict[str, int],
     ray.shutdown()
     # done
     return memo
+
+
+@ray.remote
+def encode_with_patterns_recur(x: Union[list, str],
+                               PATTERNS: list,  # List[re.Pattern]
+                               unkid: Optional[int] = None):
+    if isinstance(x, str):
+        n_pat = len(PATTERNS)
+        for i in range(n_pat):
+            if PATTERNS[i].match(x):
+                return i
+        return unkid if unkid else n_pat
+    else:
+        tmp = []
+        for element in x:
+            tmp.append(encode_with_patterns_recur.remote(
+                element, PATTERNS, unkid))
+        return ray.get(tmp)
+
+
+def encode_with_patterns_cpu(x: Union[list, str],
+                             PATTERNS: list,  # List[re.Pattern]
+                             unkid: Optional[int] = None):
+    """Encode all elements of x with the regex pattern.
+
+    Parameters:
+    -----------
+    x : Union[list, str]
+        Encoding happens if type(x)==str. If type(x)=list then a recursive
+          call on each list element is triggered.
+
+    PATTERNS : List[re.Pattern]
+        The regex.compile patterns based on the selected shingles in the
+          memoization cache.
+
+    unkid : int
+        Index of the UKNOWN token (UNK). It's `unkid=len(PATTERNS)` by default
+
+    Returns:
+    --------
+    encoded : Union[list, int]
+        The IDs refer to the position index in PATTERNS list
+    """
+    # Start ray.io
+    NUM_CPUS = max(1, int(psutil.cpu_count(logical=True) * 0.9))
+    ray.init(num_cpus=NUM_CPUS)
+    print(f"Num CPUs: {NUM_CPUS}")
+    # encode
+    encoded = ray.get(encode_with_patterns_recur.remote(x, PATTERNS, unkid))
+    # stop ray
+    ray.shutdown()
+    # done
+    return encoded
