@@ -356,45 +356,46 @@ def cews(db: Dict[str, int],
 
 
 @functools.cmp_to_key
-def sort_by_patterns(a, b):
-    """Comparision function for PATTERNS.sort
+def sort_by_memostats(a, b):
+    """ Comparison function list(memo.items())
 
-    Example:
-    --------
-        PATTERNS.sort(key=sort_by_patterns)
+    Parameters:
+    -----------
+    a, b : [shingle, num_wild, num_infix, k, count]
+
+    Examples:
+    ---------
+    wildcard = '\uFFFF'
+    MEMOSTATS = [(
+        s, len(s.split(wildcard))-1, len(s[1:-1].split(wildcard))-1,
+        len(s), c) for s, c in memo.items()]
+    MEMOSTATS.sort(key=sort_by_memo)
+    shingles = [x[0] for x in MEMOSTATS]
     """
-    # (1) Prefer exact matches (no wildcards) or resp. less wilcards
-    a_wild = len(a.pattern.split(r"\w{1}")) - 1
-    b_wild = len(b.pattern.split(r"\w{1}")) - 1
-    if a_wild > b_wild:
-        return 1  # a is bad
-    elif a_wild < b_wild:
+    # (1) Prefer less wilcards
+    if a[1] > b[1]:
+        return 1
+    elif a[1] < b[1]:
         return -1
-    else:  # 0: a_wild == b_wild
-        # (2) Prefer infix wildcards over suffix/prefix wildcards
-        a_infix = len(
-            [None for s in a.pattern[1:-1].split(r"\w{1}") if len(s) > 0]) - 1
-        b_infix = len(
-            [None for s in b.pattern[1:-1].split(r"\w{1}") if len(s) > 0]) - 1
-        if a_infix < b_infix:
-            return 1  # a is bad
-        elif a_infix > b_infix:
+    else:  # 0: a[1] == b[1]
+        # (2) Prefer more infix wildcards
+        if a[2] < b[2]:
+            return 1
+        elif a[2] > b[2]:
             return -1
-        else:  # 0: a_infix == b_infix
-            # (3) Prefer short len
-            a_len = len(a.pattern)
-            b_len = len(b.pattern)
-            if a_len > b_len:
+        else:  # 0: a[2] == b[2]
+            # (3) Prefer longer shingle length
+            if a[3] < b[3]:
                 return 1
-            elif a_len < b_len:
+            elif a[3] > b[3]:
                 return -1
-            else:
-                # (4) Alphabetic
-                if a.pattern > b.pattern:
+            else:  # 0: same length
+                # (4) Prefer more frequent shingles
+                if a[4] < b[4]:
                     return 1
-                elif a.pattern < b.pattern:
+                elif a[4] > b[4]:
                     return -1
-                else:
+                else:  # 0: same frequency
                     return 0
 
 
@@ -423,12 +424,23 @@ def shingles_to_patterns(memo: Dict[str, int],
         The regex.compile patterns based on the selected shingles in the
           memoization cache.
     """
+    # sort memo cache
+    if isinstance(memo, dict):
+        MEMOSTATS = [(
+            s, len(s.split(wildcard)) - 1, len(s[1:-1].split(wildcard)) - 1,
+            len(s), c) for s, c in memo.items()]
+    elif isinstance(memo, (list, tuple)):
+        MEMOSTATS = [(
+            s, len(s.split(wildcard)) - 1, len(s[1:-1].split(wildcard)) - 1,
+            len(s), 0) for s in memo]
+    MEMOSTATS.sort(key=sort_by_memostats)
+    shingles = [x[0] for x in MEMOSTATS]
+    # convert shingles to regex patterns
     PATTERNS = []
-    for s in memo.keys():
-        reg = s.replace(wildcard, r"\w{1}")
+    for shingle in shingles:
+        reg = r"\w{1}".join([re.escape(s) for s in shingle.split(wildcard)])
         pat = re.compile(f"^{reg}$")
         PATTERNS.append(pat)
-    PATTERNS.sort(key=sort_by_patterns)
     return PATTERNS
 
 

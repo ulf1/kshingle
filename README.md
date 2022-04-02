@@ -16,7 +16,7 @@ The package `kshingle` can be deployed for the following use cases:
 ## Install package
 
 ```sh
-pip install "kshingle>=0.9.0"
+pip install "kshingle>=0.9.3"
 ```
 
 
