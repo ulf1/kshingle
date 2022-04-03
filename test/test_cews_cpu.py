@@ -31,16 +31,9 @@ def test7():
     # encode shingles with patterns
     PATTERNS = ks.shingles_to_patterns(memo)
     encoded = ks.encode_with_patterns_cpu(shingled, PATTERNS, len(PATTERNS))
-    assert len(PATTERNS) == len(memo)
+    assert sum([len(pats) for pats in PATTERNS.values()]) == len(memo)
     assert len(encoded) == len(shingled)
     for i in range(len(encoded)):
         assert len(encoded[i]) == len(shingled[i])
         for j in range(len(encoded[i])):
             assert len(encoded[i][j]) == len(shingled[i][j])
-
-
-def test8():
-    memo = {"*a": 1, "a*b": 1, "a*": 1, "a": 1}
-    PATTERNS = ks.shingles_to_patterns(memo, wildcard="*")
-    assert [p.pattern[1:-1] for p in PATTERNS] == [
-        "a", "a\\w{1}b", "\\w{1}a", "a\\w{1}"]
