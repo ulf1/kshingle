@@ -1,6 +1,5 @@
 import ray
 import psutil
-import random
 from .cews import expandshingle
 from typing import Optional, Dict, Union, List
 import numpy as np
