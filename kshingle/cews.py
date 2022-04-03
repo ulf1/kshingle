@@ -401,7 +401,7 @@ def sort_by_memostats(a, b):
 
 def shingles_to_patterns(memo: Dict[str, int],
                          wildcard: Optional[str] = '\uFFFF'
-                         ) -> list:  # List[re.Pattern]
+                         ) -> Dict[int, List[re.Pattern]]:
     """Convert shingles with wildcards to regex patterns
 
     Parameters:
@@ -420,7 +420,7 @@ def shingles_to_patterns(memo: Dict[str, int],
 
     Returns:
     --------
-    PATTERNS : List[re.Pattern]
+    PATTERNS : Dict[int, List[re.Pattern]]
         The regex.compile patterns based on the selected shingles in the
           memoization cache.
     """
@@ -436,16 +436,21 @@ def shingles_to_patterns(memo: Dict[str, int],
     MEMOSTATS.sort(key=sort_by_memostats)
     shingles = [x[0] for x in MEMOSTATS]
     # convert shingles to regex patterns
-    PATTERNS = []
+    PATTERNS = {}
     for shingle in shingles:
+        # create sublist
+        n = len(shingle)
+        if PATTERNS.get(n) is None:
+            PATTERNS[n] = []
+        # create regex
         reg = r"\w{1}".join([re.escape(s) for s in shingle.split(wildcard)])
         pat = re.compile(f"^{reg}$")
-        PATTERNS.append(pat)
+        PATTERNS[n].append(pat)
     return PATTERNS
 
 
 def encode_with_patterns(x: Union[list, str],
-                         PATTERNS: list,  # List[re.Pattern]
+                         PATTERNS: Dict[int, List[re.Pattern]],
                          unkid: Optional[int] = None):
     """Encode all elements of x with the regex pattern.
 
@@ -455,7 +460,7 @@ def encode_with_patterns(x: Union[list, str],
         Encoding happens if type(x)==str. If type(x)=list then a recursive
           call on each list element is triggered.
 
-    PATTERNS : List[re.Pattern]
+    PATTERNS : Dict[int, List[re.Pattern]]
         The regex.compile patterns based on the selected shingles in the
           memoization cache.
 
@@ -468,9 +473,10 @@ def encode_with_patterns(x: Union[list, str],
         The IDs refer to the position index in PATTERNS list
     """
     if isinstance(x, str):
-        n_pat = len(PATTERNS)
+        nx = len(x)
+        n_pat = len(PATTERNS.get(nx, []))
         for i in range(n_pat):
-            if PATTERNS[i].match(x):
+            if PATTERNS[nx][i].match(x):
                 return i
         return unkid if unkid else n_pat
     else:

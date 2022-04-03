@@ -16,7 +16,7 @@ The package `kshingle` can be deployed for the following use cases:
 ## Install package
 
 ```sh
-pip install "kshingle>=0.9.4"
+pip install "kshingle>=0.9.5"
 ```
 
 
@@ -324,7 +324,7 @@ memo = ks.cews(db2, max_wildcards=1, min_samples_leaf=10, threshold=0.9)
 
 # Build a pattern list
 PATTERNS = ks.shingles_to_patterns(memo, wildcard='\uFFFF')
-unkid = len(PATTERNS)
+unkid = sum([len(pats) for pats in PATTERNS.values()])
 ```
 
 Finally, we can start to encode data

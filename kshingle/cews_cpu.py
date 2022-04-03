@@ -2,8 +2,9 @@ import ray
 import psutil
 import random
 from .cews import expandshingle
-from typing import Optional, Dict, Union
+from typing import Optional, Dict, Union, List
 import numpy as np
+import re
 
 
 @ray.remote
@@ -107,12 +108,13 @@ def cews_cpu(db: Dict[str, int],
 
 @ray.remote
 def encode_with_patterns_recur(x: Union[list, str],
-                               PATTERNS: list,  # List[re.Pattern]
+                               PATTERNS: Dict[int, List[re.Pattern]],
                                unkid: Optional[int] = None):
     if isinstance(x, str):
-        n_pat = len(PATTERNS)
+        nx = len(x)
+        n_pat = len(PATTERNS.get(nx, []))
         for i in range(n_pat):
-            if PATTERNS[i].match(x):
+            if PATTERNS[nx][i].match(x):
                 return i
         return unkid if unkid else n_pat
     else:
@@ -124,7 +126,7 @@ def encode_with_patterns_recur(x: Union[list, str],
 
 
 def encode_with_patterns_cpu(x: Union[list, str],
-                             PATTERNS: list,  # List[re.Pattern]
+                             PATTERNS: Dict[int, List[re.Pattern]],
                              unkid: Optional[int] = None):
     """Encode all elements of x with the regex pattern.
 
