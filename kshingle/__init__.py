@@ -8,7 +8,8 @@ from .vocab import (
 from .wildcard import wildcard_shinglesets
 from .metrics import jaccard, jaccard_strings
 from .cews import (
-    expandshingle, cews, shingles_to_patterns, encode_with_patterns)
+    expandshingle, cews, shingles_to_patterns, encode_with_patterns,
+    encode_multi_match_corpus)
 from .cews_cpu import cews_cpu, encode_with_patterns_cpu
 
 # deprecated

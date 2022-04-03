@@ -2,6 +2,8 @@ import re
 from typing import Optional, Dict, List, Union
 import functools
 import numpy as np
+import itertools
+from .shingleseqs import shingleseqs_k
 
 
 def select_most_frequent_shingles(matches: List[str],
@@ -481,3 +483,70 @@ def encode_with_patterns(x: Union[list, str],
         return unkid if unkid else n_pat
     else:
         return [encode_with_patterns(el, PATTERNS, unkid) for el in x]
+
+
+def encode_multi_match_str(x: str,
+                           PATTERNS: List[re.Pattern],
+                           num_matches: Optional[int] = 1,
+                           unkid: Optional[int] = None):
+    """ Encode 1 shingle for `encode_multi_match_corpus` """
+    nx = len(x)
+    out = []
+    for i, pat in enumerate(PATTERNS.get(nx, [])):
+        if pat.match(x):
+            out.append(i)
+            if len(out) >= num_matches:
+                break
+    # fill empty list elements
+    for _ in range(num_matches - len(out)):
+        out.append(unkid)
+    return out
+
+
+def encode_multi_match_corpus(corpus: List[str],
+                              k: int,
+                              PATTERNS: List[re.Pattern],
+                              num_matches: Optional[int] = 1,
+                              unkid: Optional[int] = None,
+                              stack: bool = True):
+    """ Shingle and encode corpus
+
+    Example:
+    --------
+    corpus = ["lenghty text.", "another long article"]
+    encoded, shingled = encode_multi_match_corpus(
+        corpus, k=k, PATTERNS=PATTERNS, num_matches=3, stack=True)
+    """
+    # generate all shingles (docs, k, seqlen)
+    shingled = [
+        shingleseqs_k(doc, k=k, padding='post', placeholder="[PAD]")
+        for doc in corpus]
+
+    # transpose (docs, seqlen, k)
+    shingled = [
+        np.array(shingled_doc).T.tolist()
+        for shingled_doc in shingled]
+
+    # encode (docs, seqlen, k)
+    encoded = [
+        [[encode_multi_match_str(
+            ksegment,
+            PATTERNS=PATTERNS,
+            num_matches=min(nk + 1, num_matches),
+            unkid=unkid)
+          for nk, ksegment in enumerate(seq)]
+         for seq in doc]
+        for doc in shingled
+    ]
+
+    # flatten (docs, seqlen, k, num) to (docs, seqlen, k*num)
+    encoded = [
+        [list(itertools.chain(*seq)) for seq in doc]
+        for doc in encoded]
+
+    # merge to one big sequence
+    if stack:
+        encoded = np.vstack(encoded)
+
+    # done
+    return encoded, shingled
