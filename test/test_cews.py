@@ -146,7 +146,7 @@ def test10():
                           shingled, Counter([]))
     memo = ks.cews(db, threshold=0.8, min_samples_split=10, max_wildcards=2)
     PATTERNS = ks.shingles_to_patterns(memo)
-    # encode 
+    # encode
     encoded, shingled = ks.encode_multi_match_corpus(
         corpus, k=k, PATTERNS=PATTERNS, num_matches=3, stack=True)
     assert encoded.shape[1] == 3 * k - 3
