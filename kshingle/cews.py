@@ -452,7 +452,7 @@ def shingles_to_patterns(memo: Dict[str, int],
 
 
 def encode_with_patterns(x: Union[list, str],
-                         PATTERNS: Dict[int, List[re.Pattern]],
+                         PATTERNS: dict,  # Dict[int, List[re.Pattern]],
                          unkid: Optional[int] = None):
     """Encode all elements of x with the regex pattern.
 
@@ -486,7 +486,7 @@ def encode_with_patterns(x: Union[list, str],
 
 
 def encode_multi_match_str(x: str,
-                           PATTERNS: List[re.Pattern],
+                           PATTERNS: dict,  # Dict[int, List[re.Pattern]],
                            num_matches: Optional[int] = 1,
                            unkid: Optional[int] = None):
     """ Encode 1 shingle for `encode_multi_match_corpus` """
@@ -505,7 +505,7 @@ def encode_multi_match_str(x: str,
 
 def encode_multi_match_corpus(corpus: List[str],
                               k: int,
-                              PATTERNS: List[re.Pattern],
+                              PATTERNS: list,  # Dict[int, List[re.Pattern]],
                               num_matches: Optional[int] = 1,
                               unkid: Optional[int] = None,
                               stack: bool = True):

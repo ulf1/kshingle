@@ -108,7 +108,7 @@ def cews_cpu(db: Dict[str, int],
 
 @ray.remote
 def encode_with_patterns_recur(x: Union[list, str],
-                               PATTERNS: Dict[int, List[re.Pattern]],
+                               PATTERNS: dict,  # Dict[int, List[re.Pattern]],
                                unkid: Optional[int] = None):
     if isinstance(x, str):
         nx = len(x)
@@ -126,7 +126,7 @@ def encode_with_patterns_recur(x: Union[list, str],
 
 
 def encode_with_patterns_cpu(x: Union[list, str],
-                             PATTERNS: Dict[int, List[re.Pattern]],
+                             PATTERNS: dict,  # Dict[int, List[re.Pattern]],
                              unkid: Optional[int] = None):
     """Encode all elements of x with the regex pattern.
 
