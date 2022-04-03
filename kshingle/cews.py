@@ -403,7 +403,7 @@ def sort_by_memostats(a, b):
 
 def shingles_to_patterns(memo: Dict[str, int],
                          wildcard: Optional[str] = '\uFFFF'
-                         ) -> Dict[int, List[re.Pattern]]:
+                         ):  # -> Dict[int, List[re.Pattern]]:
     """Convert shingles with wildcards to regex patterns
 
     Parameters:
