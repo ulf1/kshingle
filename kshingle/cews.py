@@ -524,7 +524,7 @@ def encode_multi_match_corpus(corpus: List[str],
 
     # transpose (docs, seqlen, k)
     shingled = [
-        np.array(shingled_doc).T.tolist()
+        np.array(shingled_doc, dtype=object).T.tolist()
         for shingled_doc in shingled]
 
     # encode (docs, seqlen, k)
