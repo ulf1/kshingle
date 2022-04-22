@@ -88,7 +88,7 @@ def test3():
         ['12', '23', '34', '45'],
         ['123', '234', '345'],
         ['1234', '2345'],
-        ['12345'], 
+        ['12345'],
         []]
 
     shingles = ks.shingleseqs_k("12345", 6, padding='post')
@@ -97,7 +97,7 @@ def test3():
         ['12', '23', '34', '45', None],
         ['123', '234', '345', None, None],
         ['1234', '2345', None, None, None],
-        ['12345', None, None, None, None], 
+        ['12345', None, None, None, None],
         [None, None, None, None, None]]
 
 
