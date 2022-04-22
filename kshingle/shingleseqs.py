@@ -98,10 +98,17 @@ def shingleseqs_k(s: str,
     shingles = []
     q = len(s)
     for n in range(1, k + 1):
+        # shingle string
         seq = [s[i:(i + n)] for i in range(q - n + 1)]
+        # normal padding
         seq = pad_shingle_sequence(
             seq=seq, n=n, placeholder=placeholder,
             padding=padding, evenpad=evenpad)
+        # prepend missing placeholders if len(seq)<len(s)
+        if padding is not None:
+            n_missing = len(s) - len(seq)
+            if n_missing > 0:
+                seq = [placeholder] * n_missing + seq
         shingles.append(seq)
     return shingles
 
@@ -159,10 +166,17 @@ def shingleseqs_range(s: str,
     shingles = []
     q = len(s)
     for n in range(n_min_, n_max_ + 1):
+        # shingle string
         seq = [s[i:(i + n)] for i in range(q - n + 1)]
+        # normal padding
         seq = pad_shingle_sequence(
             seq=seq, n=n, placeholder=placeholder,
             padding=padding, evenpad=evenpad)
+        # prepend missing placeholders if len(seq)<len(s)
+        if padding is not None:
+            n_missing = len(s) - len(seq)
+            if n_missing > 0:
+                seq = [placeholder] * n_missing + seq
         shingles.append(seq)
     return shingles
 
@@ -213,9 +227,16 @@ def shingleseqs_list(s: str,
     q = len(s)
     for n in klist:
         if n > 0:
+            # shingle string
             seq = [s[i:(i + n)] for i in range(q - n + 1)]
+            # normal padding
             seq = pad_shingle_sequence(
                 seq=seq, n=n, placeholder=placeholder,
                 padding=padding, evenpad=evenpad)
+            # prepend missing placeholders if len(seq)<len(s)
+            if padding is not None:
+                n_missing = len(s) - len(seq)
+                if n_missing > 0:
+                    seq = [placeholder] * n_missing + seq
             shingles.append(seq)
     return shingles
