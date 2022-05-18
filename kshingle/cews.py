@@ -5,6 +5,7 @@ import numpy as np
 import itertools
 from .shingleseqs import pad_shingle_sequence
 import hashlib
+import copy
 
 
 def select_most_frequent_shingles(matches: List[str],
@@ -552,7 +553,7 @@ def encode_hashed_shingle(tokenhashes: List[hashlib.md5],
                           offset: Optional[int] = 0):
     """ Util fn: Find matches for 1 token """
     matches = []
-    for tid, hash in enumerate(HASHES[n]):
+    for tid, hash in enumerate(HASHES.get(n, [])):
         if hash in tokenhashes:
             matches.append(offset + tid)
         # stop if maximum number of matches were found
@@ -613,7 +614,7 @@ def encode_multi_match(multiseq: List[List[hashlib.md5]],
             nthseq.append(matches)
         allseqs.append(nthseq)
         # new offset
-        offset += len(HASHES[n])
+        offset += len(HASHES.get(n, []))
     # merge into one big sequence
     allseqs = np.hstack(allseqs)
     # done
