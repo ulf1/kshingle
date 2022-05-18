@@ -323,18 +323,19 @@ memo = ks.cews(db2, max_wildcards=1, min_samples_leaf=10, threshold=0.9)
 #memo = ks.cews(db2, max_wildcards=1, priority='rare', min_samples_leaf=1, threshold=0.9)
 
 # Build a pattern list
-PATTERNS = ks.shingles_to_patterns(memo, wildcard='\uFFFF')
-unkid = sum([len(pats) for pats in PATTERNS.values()])
+HASHES = ks.shingles_to_hashes(memo, wildcard='\uFFFF')
+unkid = sum([len(hashes) for hashes in HASHES.values()])
 ```
 
 Finally, we can start to encode data
 
 ```py
 # generate all shingles
-shingled = [ks.shingleseqs_k(doc, k=5) for doc in docs]
+multiseq = ks.shingleseqs_hashes(text, k=5)
 
 # Encode data
-encoded = ks.encode_with_patterns(shingled, PATTERNS, unkid)
+allseqs = ks.encode_multi_match(
+    multiseq, num_matches=3, HASHES=HASHES, unkid=unkid)
 ```
 
 
