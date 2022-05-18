@@ -10,9 +10,9 @@ from .metrics import jaccard, jaccard_strings
 from .cews import (
     expandshingle, 
     cews, 
-    # shingles_to_hashes,
-    # encode_with_hashes,
-    # encode_multi_match
+    shingleseqs_hashes,
+    shingles_to_hashes,
+    encode_multi_match
 )
 from .cews_cpu import cews_cpu, encode_with_patterns_cpu
 

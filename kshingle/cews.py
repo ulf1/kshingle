@@ -1,9 +1,9 @@
 import re
-from typing import Optional, Dict, List, Union
+from typing import Optional, Dict, List
 import functools
 import numpy as np
 import itertools
-# from .shingleseqs import shingleseqs_k
+from .shingleseqs import pad_shingle_sequence
 import hashlib
 
 
@@ -402,9 +402,102 @@ def sort_by_memostats(a, b):
                     return 0
 
 
+def shingleseqs_hashes(s: str,
+                       k: int,
+                       wildcard: str = '\uFFFF',
+                       padding: Optional[str] = "center",
+                       placeholder: Optional[str] = "[PAD]",
+                       evenpad: Optional[str] = 'pre'
+                       ) -> List[List[hashlib.md5]]:
+    """ Convert a string to a list of k sequences with MD5 hashed k-shingles
+
+    Parameters:
+    -----------
+    s: str
+        The raw string
+
+    k: int
+        The parameter must be k>=1
+
+    wildcard : str (Default: U+FFFF)
+        An unicode char that is not actually used by any natural language,
+          or the text that you analyzing, e.g. U+FFFE or U+FFFF
+          See https://en.wikipedia.org/wiki/Specials_(Unicode_block)
+
+    padding: Optional[str] = None
+        Type of padding. 'pre' adds placeholder at the beginning of the
+          sequence, 'post' at the end, and 'center' adds placeholder on
+          both sides of the sequence.
+
+    placeholder : Optional[str] = "[PAD]"
+        The placeholder symbol
+
+    evenpad: Optional[str] = 'pre'
+        If padding='center' then sequences with even `n` cannot be perfectly
+          centered, i.e. 1 placeholder must be added before (evenpad='pre')
+          or after (evenpad='post').
+
+    Returns:
+    --------
+    List[List[str]]
+        A list of k sequences. The 1st sublist contains the chars of the
+          string s, e.g. ['a', 'b', 'c'] for s="abc". The k=2 list containd
+          2-shingles, e.g. ['ab', 'bc'].
+
+    Example:
+    --------
+        import kshingle as ks
+        multiseq = ks.shingleseqs_hashes("abc", k=2)
+        multiseq = ks.shingleseqs_hashes("abc", k=2, padding='center')
+    """
+    # all combinations of wildcard positions given k
+    wildindices = []
+    for i in range(1, k):
+        wildindices.extend(list(itertools.combinations(range(k), i)))
+
+    # create copies of the text with wildcards
+    swild = []
+    for indices in wildindices:
+        snew = copy.copy(s)
+        for n in indices:
+            snew = "".join([wildcard if (i % k) == n else c 
+                            for i, c in enumerate(snew)])
+        swild.append(snew)
+
+    # extract all shingles and their wildcard shingles
+    placeholder_hash = [hashlib.md5(placeholder.encode('utf-8')).digest()] 
+    q = len(s)
+    multiseq = []
+    for n in range(1, k + 1):
+        seq = []
+        for i in range(q - n + 1):
+            shingle = []
+            substr = s[i:(i + n)]  # shingle
+            hash = hashlib.md5(substr.encode('utf-8')).digest()  # save hash
+            shingle.append(hash)
+            if n >= 2:
+                for j in range(len(swild)):
+                    substr = swild[j][i:(i + n)]  # wildcard shingle
+                    hash = hashlib.md5(substr.encode('utf-8')).digest()  # save hash
+                    shingle.append(hash)
+            seq.append(list(set(shingle)))
+        # padding
+        seq = pad_shingle_sequence(
+                seq=seq, n=n, placeholder=placeholder_hash,
+                padding=padding, evenpad=evenpad)
+        # prepend missing placeholders if len(seq)<len(s)
+        n_missing = q - len(seq)
+        if n_missing > 0:
+            seq = [placeholder_hash] * n_missing + seq
+        # save
+        multiseq.append(seq)
+    # done
+    return multiseq
+
+
 def shingles_to_hashes(memo: Dict[str, int],
                        wildcard: Optional[str] = '\uFFFF'
-                       ):  # -> Dict[int, List[re.Pattern]]:
+                       ) -> Dict[int, List[hashlib.md5]]:
     """Convert shingles with wildcards to MD5 hashes
 
     Parameters:
@@ -451,102 +544,77 @@ def shingles_to_hashes(memo: Dict[str, int],
     return HASHES
 
 
-# def encode_with_patterns(x: Union[list, str],
-#                          PATTERNS: dict,  # Dict[int, List[re.Pattern]],
-#                          unkid: Optional[int] = None):
-#     """Encode all elements of x with the regex pattern.
-
-#     Parameters:
-#     -----------
-#     x : Union[list, str]
-#         Encoding happens if type(x)==str. If type(x)=list then a recursive
-#           call on each list element is triggered.
-
-#     PATTERNS : Dict[int, List[re.Pattern]]
-#         The regex.compile patterns based on the selected shingles in the
-#           memoization cache.
-
-#     unkid : int
-#         Index of the UKNOWN token (UNK). It's `unkid=len(PATTERNS)` by default
-
-#     Returns:
-#     --------
-#     encoded : Union[list, int]
-#         The IDs refer to the position index in PATTERNS list
-#     """
-#     if isinstance(x, str):
-#         nx = len(x)
-#         n_pat = len(PATTERNS.get(nx, []))
-#         for i in range(n_pat):
-#             if PATTERNS[nx][i].match(x):
-#                 return i
-#         return unkid if unkid else n_pat
-#     else:
-#         return [encode_with_patterns(el, PATTERNS, unkid) for el in x]
+def encode_hashed_shingle(tokenhashes: List[hashlib.md5], 
+                          n: int, 
+                          HASHES: Dict[int, List[hashlib.md5]],
+                          num_matches: int,
+                          unkid: int,
+                          offset: Optional[int] = 0):
+    """ Util fn: Find matches for 1 token """
+    matches = []
+    for tid, hash in enumerate(HASHES[n]):
+        if hash in tokenhashes:
+            matches.append(offset + tid)
+        # stop if maximum number of matches were found
+        if len(matches) >= num_matches:
+            break
+    # fill empty list elements
+    for _ in range(num_matches - len(matches)):
+        matches.append(unkid)
+    # done
+    return matches
 
 
-# def encode_multi_match_str(x: str,
-#                            PATTERNS: dict,  # Dict[int, List[re.Pattern]],
-#                            num_matches: Optional[int] = 1,
-#                            unkid: Optional[int] = None):
-#     """ Encode 1 shingle for `encode_multi_match_corpus` """
-#     nx = len(x)
-#     out = []
-#     for i, pat in enumerate(PATTERNS.get(nx, [])):
-#         if pat.match(x):
-#             out.append(i)
-#             if len(out) >= num_matches:
-#                 break
-#     # fill empty list elements
-#     for _ in range(num_matches - len(out)):
-#         out.append(unkid)
-#     return out
+def encode_multi_match(multiseq: List[List[hashlib.md5]],
+                       HASHES: Dict[int, List[hashlib.md5]],
+                       num_matches: int,
+                       unkid: int):
+    """ Encode sequence with hashed wildcard shingles 
+    
+    Parameters:
+    -----------
+    multiseq : List[List[hashlib.md5]]
+        List of k sequences with a list of hashed wildcard shingles
+        for each shingle/time-step
 
+    HASHES : Dict[int, List[hashlib.md5]]
+        The MD5 hashes based on the selected shingles in the
+          memoization cache.
+        
+    num_matches : int
+        Number of token ID to use for an n-length shingle
 
-# def encode_multi_match_corpus(corpus: List[str],
-#                               k: int,
-#                               PATTERNS: list,  # Dict[int, List[re.Pattern]],
-#                               num_matches: Optional[int] = 1,
-#                               unkid: Optional[int] = None,
-#                               stack: bool = True):
-#     """ Shingle and encode corpus
+    unkid : int
+        Token ID for unknown shingles
 
-#     Example:
-#     --------
-#     corpus = ["lenghty text.", "another long article"]
-#     encoded, shingled = encode_multi_match_corpus(
-#         corpus, k=k, PATTERNS=PATTERNS, num_matches=3, stack=True)
-#     """
-#     # generate all shingles (docs, k, seqlen)
-#     shingled = [
-#         shingleseqs_k(doc, k=k, padding='post', placeholder="[PAD]")
-#         for doc in corpus]
+    Return:
+    -------
+    allseqs : np.ndarray (shape=[seqlen, numfeats])
+        Multi-dimensional sequences with token IDs
 
-#     # transpose (docs, seqlen, k)
-#     shingled = [
-#         np.array(shingled_doc, dtype=object).T.tolist()
-#         for shingled_doc in shingled]
-
-#     # encode (docs, seqlen, k)
-#     encoded = [
-#         [[encode_multi_match_str(
-#             ksegment,
-#             PATTERNS=PATTERNS,
-#             num_matches=min(nk + 1, num_matches),
-#             unkid=unkid)
-#           for nk, ksegment in enumerate(seq)]
-#          for seq in doc]
-#         for doc in shingled
-#     ]
-
-#     # flatten (docs, seqlen, k, num) to (docs, seqlen, k*num)
-#     encoded = [
-#         [list(itertools.chain(*seq)) for seq in doc]
-#         for doc in encoded]
-
-#     # merge to one big sequence
-#     if stack:
-#         encoded = np.vstack(encoded)
-
-#     # done
-#     return encoded, shingled
+    Examples:
+    ---------
+    allseqs = encode_multi_match(
+        multiseq, num_matches=3, HASHES=HASHES, unkid=unkid)
+    """
+    offset = 0
+    allseqs = []
+    for i in range(len(multiseq)):
+        n = i + 1
+        nthseq = []
+        for tokenhashes in multiseq[i]:
+            matches = encode_hashed_shingle(
+                tokenhashes, 
+                n=n, 
+                HASHES=HASHES,
+                num_matches=min(n, num_matches), 
+                unkid=unkid, 
+                offset=offset)
+            nthseq.append(matches)
+        allseqs.append(nthseq)
+        # new offset
+        offset += len(HASHES[n])
+    # merge into one big sequence
+    allseqs = np.hstack(allseqs)
+    # done
+    return allseqs
