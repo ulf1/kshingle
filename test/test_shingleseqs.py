@@ -12,7 +12,7 @@ def test1():
     assert shingles == [[" "], []]
 
     shingles = ks.shingleseqs_k(" ", 2, padding='post')
-    assert shingles == [[" "], [None]]
+    assert shingles == [[" "], ['[PAD]']]
 
 
 def test2():
@@ -38,7 +38,7 @@ def test3():
     shingles = ks.shingleseqs_k("12345", 2, padding='post')
     assert shingles == [
         ['1', '2', '3', '4', '5'],
-        ['12', '23', '34', '45', None]]
+        ['12', '23', '34', '45', '[PAD]']]
 
     shingles = ks.shingleseqs_k("12345", 3)
     assert shingles == [
@@ -49,8 +49,8 @@ def test3():
     shingles = ks.shingleseqs_k("12345", 3, padding='post')
     assert shingles == [
         ['1', '2', '3', '4', '5'],
-        ['12', '23', '34', '45', None],
-        ['123', '234', '345', None, None]]
+        ['12', '23', '34', '45', '[PAD]'],
+        ['123', '234', '345', '[PAD]', '[PAD]']]
 
     shingles = ks.shingleseqs_k("12345", 4)
     assert shingles == [
@@ -62,9 +62,9 @@ def test3():
     shingles = ks.shingleseqs_k("12345", 4, padding='pre')
     assert shingles == [
         ['1', '2', '3', '4', '5'],
-        [None, '12', '23', '34', '45'],
-        [None, None, '123', '234', '345'],
-        [None, None, None, '1234', '2345']]
+        ['[PAD]', '12', '23', '34', '45'],
+        ['[PAD]', '[PAD]', '123', '234', '345'],
+        ['[PAD]', '[PAD]', '[PAD]', '1234', '2345']]
 
     shingles = ks.shingleseqs_k("12345", 5)
     assert shingles == [
@@ -77,10 +77,10 @@ def test3():
     shingles = ks.shingleseqs_k("12345", 5, padding='center', evenpad='post')
     assert shingles == [
         ['1', '2', '3', '4', '5'],
-        ['12', '23', '34', '45', None],
-        [None, '123', '234', '345', None],
-        [None, '1234', '2345', None, None],
-        [None, None, '12345', None, None]]
+        ['12', '23', '34', '45', '[PAD]'],
+        ['[PAD]', '123', '234', '345', '[PAD]'],
+        ['[PAD]', '1234', '2345', '[PAD]', '[PAD]'],
+        ['[PAD]', '[PAD]', '12345', '[PAD]', '[PAD]']]
 
     shingles = ks.shingleseqs_k("12345", 6)
     assert shingles == [
@@ -94,11 +94,11 @@ def test3():
     shingles = ks.shingleseqs_k("12345", 6, padding='post')
     assert shingles == [
         ['1', '2', '3', '4', '5'],
-        ['12', '23', '34', '45', None],
-        ['123', '234', '345', None, None],
-        ['1234', '2345', None, None, None],
-        ['12345', None, None, None, None],
-        [None, None, None, None, None]]
+        ['12', '23', '34', '45', '[PAD]'],
+        ['123', '234', '345', '[PAD]', '[PAD]'],
+        ['1234', '2345', '[PAD]', '[PAD]', '[PAD]'],
+        ['12345', '[PAD]', '[PAD]', '[PAD]', '[PAD]'],
+        ['[PAD]', '[PAD]', '[PAD]', '[PAD]', '[PAD]']]
 
 
 def test11():
