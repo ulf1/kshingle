@@ -4,6 +4,7 @@ import re
 import itertools
 import numpy as np
 from shingleseqs import shingleseqs_k
+import warnings
 
 
 def shingles_to_patterns(memo: Dict[str, int],
@@ -31,6 +32,11 @@ def shingles_to_patterns(memo: Dict[str, int],
         The regex.compile patterns based on the selected shingles in the
           memoization cache.
     """
+    warnings.warn(
+        ("'kshingle.shingles_to_patterns' is deprecated;"
+         "use 'kshingle.shingles_to_hashes' instead."),
+        DeprecationWarning, stacklevel=2)
+
     # sort memo cache
     if isinstance(memo, dict):
         MEMOSTATS = [(
@@ -79,6 +85,11 @@ def encode_with_patterns(x: Union[list, str],
     encoded : Union[list, int]
         The IDs refer to the position index in PATTERNS list
     """
+    warnings.warn(
+        ("'kshingle.encode_with_patterns' is deprecated;"
+         "use 'kshingle.encode_multi_match' instead."),
+        DeprecationWarning, stacklevel=2)
+
     if isinstance(x, str):
         nx = len(x)
         n_pat = len(PATTERNS.get(nx, []))
@@ -122,6 +133,11 @@ def encode_multi_match_corpus(corpus: List[str],
     encoded, shingled = encode_multi_match_corpus(
         corpus, k=k, PATTERNS=PATTERNS, num_matches=3, stack=True)
     """
+    warnings.warn(
+        ("'kshingle.encode_multi_match_corpus' is deprecated;"
+         "use 'kshingle.encode_multi_match' instead."),
+        DeprecationWarning, stacklevel=2)
+
     # generate all shingles (docs, k, seqlen)
     shingled = [
         shingleseqs_k(doc, k=k, padding='post', placeholder="[PAD]")
