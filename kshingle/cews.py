@@ -461,12 +461,12 @@ def shingleseqs_hashes(s: str,
     for indices in wildindices:
         snew = copy.copy(s)
         for n in indices:
-            snew = "".join([wildcard if (i % k) == n else c 
+            snew = "".join([wildcard if (i % k) == n else c
                             for i, c in enumerate(snew)])
         swild.append(snew)
 
     # extract all shingles and their wildcard shingles
-    placeholder_hash = [hashlib.md5(placeholder.encode('utf-8')).digest()] 
+    placeholder_hash = [hashlib.md5(placeholder.encode('utf-8')).digest()]
     q = len(s)
     multiseq = []
     for n in range(1, k + 1):
@@ -474,18 +474,18 @@ def shingleseqs_hashes(s: str,
         for i in range(q - n + 1):
             shingle = []
             substr = s[i:(i + n)]  # shingle
-            hash = hashlib.md5(substr.encode('utf-8')).digest()  # save hash
-            shingle.append(hash)
+            hashed = hashlib.md5(substr.encode('utf-8')).digest()
+            shingle.append(hashed)  # save hash
             if n >= 2:
                 for j in range(len(swild)):
                     substr = swild[j][i:(i + n)]  # wildcard shingle
-                    hash = hashlib.md5(substr.encode('utf-8')).digest()  # save hash
-                    shingle.append(hash)
+                    hashed = hashlib.md5(substr.encode('utf-8')).digest()
+                    shingle.append(hashed)  # save hash
             seq.append(list(set(shingle)))
         # padding
         seq = pad_shingle_sequence(
-                seq=seq, n=n, placeholder=placeholder_hash,
-                padding=padding, evenpad=evenpad)
+            seq=seq, n=n, placeholder=placeholder_hash,
+            padding=padding, evenpad=evenpad)
         # prepend missing placeholders if len(seq)<len(s)
         n_missing = q - len(seq)
         if n_missing > 0:
@@ -540,13 +540,13 @@ def shingles_to_hashes(memo: Dict[str, int],
         if HASHES.get(n) is None:
             HASHES[n] = []
         # create hashes
-        hash = hashlib.md5(shingle.encode('utf-8'))  # save hash
-        HASHES[n].append(hash)
+        hashed = hashlib.md5(shingle.encode('utf-8')).digest()
+        HASHES[n].append(hashed)  # save hash
     return HASHES
 
 
-def encode_hashed_shingle(tokenhashes: List[hashlib.md5], 
-                          n: int, 
+def encode_hashed_shingle(tokenhashes: List[hashlib.md5],
+                          n: int,
                           HASHES: Dict[int, List[hashlib.md5]],
                           num_matches: int,
                           unkid: int,
@@ -570,8 +570,8 @@ def encode_multi_match(multiseq: List[List[hashlib.md5]],
                        HASHES: Dict[int, List[hashlib.md5]],
                        num_matches: int,
                        unkid: int):
-    """ Encode sequence with hashed wildcard shingles 
-    
+    """ Encode sequence with hashed wildcard shingles
+
     Parameters:
     -----------
     multiseq : List[List[hashlib.md5]]
@@ -581,7 +581,7 @@ def encode_multi_match(multiseq: List[List[hashlib.md5]],
     HASHES : Dict[int, List[hashlib.md5]]
         The MD5 hashes based on the selected shingles in the
           memoization cache.
-        
+
     num_matches : int
         Number of token ID to use for an n-length shingle
 
@@ -605,11 +605,11 @@ def encode_multi_match(multiseq: List[List[hashlib.md5]],
         nthseq = []
         for tokenhashes in multiseq[i]:
             matches = encode_hashed_shingle(
-                tokenhashes, 
-                n=n, 
+                tokenhashes,
+                n=n,
                 HASHES=HASHES,
-                num_matches=min(n, num_matches), 
-                unkid=unkid, 
+                num_matches=min(n, num_matches),
+                unkid=unkid,
                 offset=offset)
             nthseq.append(matches)
         allseqs.append(nthseq)

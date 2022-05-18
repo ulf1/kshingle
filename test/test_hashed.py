@@ -7,7 +7,7 @@ import itertools
 def test21():
     # raw text
     text = "Die Kuh macht muh. Der Hund wufft herum."
-    
+
     multiseq = ks.shingleseqs_hashes(text, k=4)
 
     # Build pattern list
@@ -25,5 +25,5 @@ def test21():
     # Encode sequences
     allseqs = ks.encode_multi_match(
         multiseq, num_matches=3, HASHES=HASHES, unkid=unkid)
-    
+
     assert allseqs.shape[1] == 9
