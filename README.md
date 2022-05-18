@@ -1,6 +1,5 @@
 [![PyPI version](https://badge.fury.io/py/kshingle.svg)](https://badge.fury.io/py/kshingle)
 [![DOI](https://zenodo.org/badge/317843267.svg)](https://zenodo.org/badge/latestdoi/317843267)
-[![kshingle](https://snyk.io/advisor/python/kshingle/badge.svg)](https://snyk.io/advisor/python/kshingle)
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/ulf1/kshingle.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/ulf1/kshingle/alerts/)
 [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/ulf1/kshingle.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/ulf1/kshingle/context:python)
 [![PyPi downloads](https://img.shields.io/pypi/dm/kshingle)](https://img.shields.io/pypi/dm/kshingle)
