@@ -4,7 +4,7 @@ from typing import List, Optional
 def pad_shingle_sequence(seq: List[str],
                          n: int,
                          padding: Optional[str] = 'center',
-                         placeholder: Optional[int] = None,
+                         placeholder: Optional[str] = "[PAD]",
                          evenpad: Optional[str] = 'pre'):
     """Padding of multdimensional shingle sequences
 
@@ -21,7 +21,7 @@ def pad_shingle_sequence(seq: List[str],
           sequence, 'post' at the end, and 'center' adds placeholder on
           both sides of the sequence.
 
-    placeholder : Optional[int] = None
+    placeholder : Optional[str] = "[PAD]"
         The placeholder symbol
 
     evenpad: Optional[str] = 'pre'
@@ -56,7 +56,7 @@ def pad_shingle_sequence(seq: List[str],
 def shingleseqs_k(s: str,
                   k: int,
                   padding: Optional[str] = None,
-                  placeholder: Optional[int] = None,
+                  placeholder: Optional[str] = "[PAD]",
                   evenpad: Optional[str] = 'pre'
                   ) -> List[List[str]]:
     """Convert a string to a list of k sequences with k-shingles
@@ -74,7 +74,7 @@ def shingleseqs_k(s: str,
           sequence, 'post' at the end, and 'center' adds placeholder on
           both sides of the sequence.
 
-    placeholder : Optional[int] = None
+    placeholder : Optional[str] = "[PAD]"
         The placeholder symbol
 
     evenpad: Optional[str] = 'pre'
@@ -117,7 +117,7 @@ def shingleseqs_range(s: str,
                       n_min: int,
                       n_max: int,
                       padding: Optional[str] = None,
-                      placeholder: Optional[int] = None,
+                      placeholder: Optional[str] = "[PAD]",
                       evenpad: Optional[str] = 'pre'
                       ) -> List[List[str]]:
     """Convert a string to a list of k sequences with k-shingles
@@ -138,7 +138,7 @@ def shingleseqs_range(s: str,
           sequence, 'post' at the end, and 'center' adds placeholder on
           both sides of the sequence.
 
-    placeholder : Optional[int] = None
+    placeholder : Optional[str] = "[PAD]"
         The placeholder symbol
 
     evenpad: Optional[str] = 'pre'
@@ -184,7 +184,7 @@ def shingleseqs_range(s: str,
 def shingleseqs_list(s: str,
                      klist: List[int],
                      padding: Optional[str] = None,
-                     placeholder: Optional[int] = None,
+                     placeholder: Optional[str] = "[PAD]",
                      evenpad: Optional[str] = 'pre'
                      ) -> List[List[str]]:
     """Convert a string to a list of k sequences with k-shingles
@@ -202,7 +202,7 @@ def shingleseqs_list(s: str,
           sequence, 'post' at the end, and 'center' adds placeholder on
           both sides of the sequence.
 
-    placeholder : Optional[int] = None
+    placeholder : Optional[str] = "[PAD]"
         The placeholder symbol
 
     evenpad: Optional[str] = 'pre'

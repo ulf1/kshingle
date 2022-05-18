@@ -8,9 +8,19 @@ from .vocab import (
 from .wildcard import wildcard_shinglesets
 from .metrics import jaccard, jaccard_strings
 from .cews import (
-    expandshingle, cews, shingles_to_patterns, encode_with_patterns,
-    encode_multi_match_corpus)
+    expandshingle, 
+    cews, 
+    # shingles_to_hashes,
+    # encode_with_hashes,
+    # encode_multi_match
+)
 from .cews_cpu import cews_cpu, encode_with_patterns_cpu
+
+from .pattern_encoding import (
+    shingles_to_patterns, 
+    encode_with_patterns,
+    encode_multi_match_corpus
+)
 
 # deprecated
 from .vocab import encoded_with_vocab
