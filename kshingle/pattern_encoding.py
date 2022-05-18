@@ -3,7 +3,7 @@ from .cews import sort_by_memostats
 import re
 import itertools
 import numpy as np
-from shingleseqs import shingleseqs_k
+from .shingleseqs import shingleseqs_k
 import warnings
 
 
