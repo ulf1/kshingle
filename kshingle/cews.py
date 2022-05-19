@@ -505,7 +505,7 @@ def encode_multi_match_str(x: str,
 
 def encode_multi_match_corpus(corpus: List[str],
                               k: int,
-                              PATTERNS: list,  # Dict[int, List[re.Pattern]],
+                              PATTERNS: list,  # List[re.Pattern],
                               num_matches: Optional[int] = 1,
                               unkid: Optional[int] = None,
                               stack: bool = True):
@@ -541,7 +541,7 @@ def encode_multi_match_corpus(corpus: List[str],
                 encseqpos.append(encode_multi_match_str(
                     ksegment,
                     PATTERNLIST=PATTERNS.get(nkm1 + 1, []),
-                    offset=offsets[nkm1],  
+                    offset=offsets[nkm1],
                     num_matches=min(nkm1 + 1, num_matches),
                     unkid=unkid))
             encdoc.append(encseqpos)
