@@ -226,8 +226,8 @@ def encode_multi_match_corpus_cpu(corpus: List[str],
                     offset=offsets[nkm1],
                     num_matches=min(nkm1 + 1, num_matches),
                     unkid=unkid))
-            encdoc.append(encseqpos)
-        encoded.append(ray.get(encdoc))
+            encdoc.append(ray.get(encseqpos))
+        encoded.append(encdoc)
 
     # stop ray
     ray.shutdown()
