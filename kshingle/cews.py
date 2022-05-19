@@ -527,31 +527,23 @@ def encode_multi_match_corpus(corpus: List[str],
         np.array(shingled_doc, dtype=object).T.tolist()
         for shingled_doc in shingled]
 
+    # lookup list for offsets, n=i+1
+    # e.g., [0, 80, 243, 508, 650]
+    offsets = np.cumsum([len(PATTERNS.get(i, [])) for i in range(k)]).tolist()
+
     # encode (docs, seqlen, k)
-    # encoded = [
-    #     [[encode_multi_match_str(
-    #         ksegment,
-    #         PATTERNS=PATTERNS,
-    #         num_matches=min(nk + 1, num_matches),
-    #         unkid=unkid)
-    #       for nk, ksegment in enumerate(seq)]
-    #      for seq in doc]
-    #     for doc in shingled
-    # ]
     encoded = []
     for doc in shingled:
         encdoc = []
         for seq in doc:
             encseq = []
-            offset = 0
-            for nk, ksegment in enumerate(seq):
+            for nkm1, ksegment in enumerate(seq):
                 encseq.append(encode_multi_match_str(
                     ksegment,
-                    PATTERNLIST=PATTERNS.get(nk, []),
-                    offset=offset,
-                    num_matches=min(nk + 1, num_matches),
+                    PATTERNLIST=PATTERNS.get(nkm1 + 1, []),
+                    offset=offsets[nkm1],  
+                    num_matches=min(nkm1 + 1, num_matches),
                     unkid=unkid))
-                offset += len(PATTERNS.get(nk, []))
             encdoc.append(encseq)
         encoded.append(encdoc)
 
