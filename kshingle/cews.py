@@ -467,6 +467,7 @@ def shingleseqs_hashes(s: str,
 
     # extract all shingles and their wildcard shingles
     placeholder_hash = [hashlib.md5(placeholder.encode('utf-8')).digest()]
+    # placeholder_hash = [placeholder]
     q = len(s)
     multiseq = []
     for n in range(1, k + 1):
@@ -475,11 +476,13 @@ def shingleseqs_hashes(s: str,
             shingle = []
             substr = s[i:(i + n)]  # shingle
             hashed = hashlib.md5(substr.encode('utf-8')).digest()
+            # hashed = substr
             shingle.append(hashed)  # save hash
             if n >= 2:
                 for j in range(len(swild)):
                     substr = swild[j][i:(i + n)]  # wildcard shingle
                     hashed = hashlib.md5(substr.encode('utf-8')).digest()
+                    # hashed = substr
                     shingle.append(hashed)  # save hash
             seq.append(list(set(shingle)))
         # padding
@@ -541,6 +544,7 @@ def shingles_to_hashes(memo: Dict[str, int],
             HASHES[n] = []
         # create hashes
         hashed = hashlib.md5(shingle.encode('utf-8')).digest()
+        # hashed = shingle
         HASHES[n].append(hashed)  # save hash
     return HASHES
 

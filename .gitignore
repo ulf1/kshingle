@@ -109,4 +109,5 @@ venv.bak/
 profile/data*
 .theia
 README.rst
-demo
+demo/*.tar.gz
+demo/*.txt
