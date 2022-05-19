@@ -6,6 +6,7 @@ import numpy as np
 import re
 from .shingleseqs import shingleseqs_k
 import itertools
+from .cews import encode_multi_match_str
 
 
 @ray.remote
@@ -153,8 +154,12 @@ def encode_with_patterns_cpu(x: Union[list, str],
     NUM_CPUS = max(1, int(psutil.cpu_count(logical=True) * 0.9))
     ray.init(num_cpus=NUM_CPUS)
     print(f"Num CPUs: {NUM_CPUS}")
+    # shared storage
+    patterns_ref = ray.put(PATTERNS)
+    unkid_ref = ray.put(unkid)
     # encode
-    encoded = ray.get(encode_with_patterns_recur.remote(x, PATTERNS, unkid))
+    encoded = ray.get(encode_with_patterns_recur.remote(
+        x, patterns_ref, unkid_ref))
     # stop ray
     ray.shutdown()
     # done
@@ -162,22 +167,16 @@ def encode_with_patterns_cpu(x: Union[list, str],
 
 
 @ray.remote
-def encode_multi_match_str_cpu(x: str,
-                               PATTERNLIST: list,  # List[re.Pattern],
-                               offset: int,
-                               num_matches: Optional[int] = 1,
-                               unkid: Optional[int] = None):
-    """ Encode 1 shingle for `encode_multi_match_corpus` """
-    out = []
-    for i, pat in enumerate(PATTERNLIST):
-        if pat.match(x):
-            out.append(i + offset)
-            if len(out) >= num_matches:
-                break
-    # fill empty list elements
-    for _ in range(num_matches - len(out)):
-        out.append(unkid)
-    return out
+def encode_seqpos(seqpos, PATTERNS, offsets, num_matches, unkid):
+    encseqpos = []
+    for nkm1, ksegment in enumerate(seqpos):
+        encseqpos.append(encode_multi_match_str(
+            ksegment,
+            PATTERNLIST=PATTERNS.get(nkm1 + 1, []),
+            offset=offsets[nkm1],
+            num_matches=min(nkm1 + 1, num_matches),
+            unkid=unkid))
+    return encseqpos
 
 
 def encode_multi_match_corpus_cpu(corpus: List[str],
@@ -205,7 +204,7 @@ def encode_multi_match_corpus_cpu(corpus: List[str],
         for shingled_doc in shingled]
 
     # Start ray.io
-    NUM_CPUS = max(1, int(psutil.cpu_count(logical=True) * 0.9))
+    NUM_CPUS = min(k, max(1, int(psutil.cpu_count(logical=True) * 0.9)))
     ray.init(num_cpus=NUM_CPUS)
     print(f"Num CPUs: {NUM_CPUS}")
 
@@ -213,20 +212,18 @@ def encode_multi_match_corpus_cpu(corpus: List[str],
     # e.g., [0, 80, 243, 508, 650]
     offsets = np.cumsum([len(PATTERNS.get(i, [])) for i in range(k)]).tolist()
 
+    patterns_ref = ray.put(PATTERNS)
+    offsets_ref = ray.put(offsets)
+    num_matches_ref = ray.put(num_matches)
+    unkid_ref = ray.put(unkid)
+
     # encode (docs, seqlen, k)
     encoded = []
     for doc in shingled:
         encdoc = []
         for seqpos in doc:
-            encseqpos = []
-            for nkm1, ksegment in enumerate(seqpos):
-                encseqpos.append(encode_multi_match_str_cpu.remote(
-                    ksegment,
-                    PATTERNLIST=PATTERNS.get(nkm1 + 1, []),
-                    offset=offsets[nkm1],
-                    num_matches=min(nkm1 + 1, num_matches),
-                    unkid=unkid))
-            encdoc.append(encseqpos)
+            encdoc.append(encode_seqpos.remote(
+                seqpos, patterns_ref, offsets_ref, num_matches_ref, unkid_ref))
         encoded.append(ray.get(encdoc))
 
     # stop ray
