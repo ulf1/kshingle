@@ -163,7 +163,7 @@ def encode_with_patterns_cpu(x: Union[list, str],
 
 
 @ray.remote
-def encode_seqpos(seqpos):
+def encode_seqpos(seqpos, PATTERNS, offsets, num_matches, unkid):
     encseqpos = []
     for nkm1, ksegment in enumerate(seqpos):
         encseqpos.append(encode_multi_match_str(
@@ -213,7 +213,8 @@ def encode_multi_match_corpus_cpu(corpus: List[str],
     for doc in shingled:
         encdoc = []
         for seqpos in doc:
-            encdoc.append(encode_seqpos.remote(seqpos))
+            encdoc.append(encode_seqpos.remote(
+                seqpos, PATTERNS, offsets, num_matches, unkid)))
         encoded.append(ray.get(encdoc))
 
     # stop ray
