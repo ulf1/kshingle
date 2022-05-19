@@ -214,7 +214,7 @@ def encode_multi_match_corpus_cpu(corpus: List[str],
         encdoc = []
         for seqpos in doc:
             encdoc.append(encode_seqpos.remote(
-                seqpos, PATTERNS, offsets, num_matches, unkid)))
+                seqpos, PATTERNS, offsets, num_matches, unkid))
         encoded.append(ray.get(encdoc))
 
     # stop ray
