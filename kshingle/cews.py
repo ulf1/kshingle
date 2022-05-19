@@ -486,15 +486,15 @@ def encode_with_patterns(x: Union[list, str],
 
 
 def encode_multi_match_str(x: str,
-                           PATTERNS: dict,  # Dict[int, List[re.Pattern]],
+                           PATTERNLIST: list,  # List[re.Pattern],
+                           offset: int,
                            num_matches: Optional[int] = 1,
                            unkid: Optional[int] = None):
     """ Encode 1 shingle for `encode_multi_match_corpus` """
-    nx = len(x)
     out = []
-    for i, pat in enumerate(PATTERNS.get(nx, [])):
+    for i, pat in enumerate(PATTERNLIST):
         if pat.match(x):
-            out.append(i)
+            out.append(i + offset)
             if len(out) >= num_matches:
                 break
     # fill empty list elements
@@ -505,7 +505,7 @@ def encode_multi_match_str(x: str,
 
 def encode_multi_match_corpus(corpus: List[str],
                               k: int,
-                              PATTERNS: list,  # Dict[int, List[re.Pattern]],
+                              PATTERNS: list,  # List[re.Pattern],
                               num_matches: Optional[int] = 1,
                               unkid: Optional[int] = None,
                               stack: bool = True):
@@ -527,21 +527,29 @@ def encode_multi_match_corpus(corpus: List[str],
         np.array(shingled_doc, dtype=object).T.tolist()
         for shingled_doc in shingled]
 
+    # lookup list for offsets, n=i+1
+    # e.g., [0, 80, 243, 508, 650]
+    offsets = np.cumsum([len(PATTERNS.get(i, [])) for i in range(k)]).tolist()
+
     # encode (docs, seqlen, k)
-    encoded = [
-        [[encode_multi_match_str(
-            ksegment,
-            PATTERNS=PATTERNS,
-            num_matches=min(nk + 1, num_matches),
-            unkid=unkid)
-          for nk, ksegment in enumerate(seq)]
-         for seq in doc]
-        for doc in shingled
-    ]
+    encoded = []
+    for doc in shingled:
+        encdoc = []
+        for seqpos in doc:
+            encseqpos = []
+            for nkm1, ksegment in enumerate(seqpos):
+                encseqpos.append(encode_multi_match_str(
+                    ksegment,
+                    PATTERNLIST=PATTERNS.get(nkm1 + 1, []),
+                    offset=offsets[nkm1],
+                    num_matches=min(nkm1 + 1, num_matches),
+                    unkid=unkid))
+            encdoc.append(encseqpos)
+        encoded.append(encdoc)
 
     # flatten (docs, seqlen, k, num) to (docs, seqlen, k*num)
     encoded = [
-        [list(itertools.chain(*seq)) for seq in doc]
+        [list(itertools.chain(*seqpos)) for seqpos in doc]
         for doc in encoded]
 
     # merge to one big sequence

@@ -1,6 +1,5 @@
 [![PyPI version](https://badge.fury.io/py/kshingle.svg)](https://badge.fury.io/py/kshingle)
 [![DOI](https://zenodo.org/badge/317843267.svg)](https://zenodo.org/badge/latestdoi/317843267)
-[![kshingle](https://snyk.io/advisor/python/kshingle/badge.svg)](https://snyk.io/advisor/python/kshingle)
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/ulf1/kshingle.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/ulf1/kshingle/alerts/)
 [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/ulf1/kshingle.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/ulf1/kshingle/context:python)
 [![PyPi downloads](https://img.shields.io/pypi/dm/kshingle)](https://img.shields.io/pypi/dm/kshingle)
@@ -331,11 +330,9 @@ unkid = sum([len(pats) for pats in PATTERNS.values()])
 Finally, we can start to encode data
 
 ```py
-# generate all shingles
-shingled = [ks.shingleseqs_k(doc, k=5) for doc in docs]
-
 # Encode data
-encoded = ks.encode_with_patterns(shingled, PATTERNS, unkid)
+encoded, shingled = ks.encode_multi_match_corpus(
+    [text], k=5, PATTERNS=PATTERNS, num_matches=3, unkid=unkid)
 ```
 
 
@@ -360,6 +357,7 @@ source .venv/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt --no-cache-dir
 pip install -r requirements-dev.txt --no-cache-dir
+pip install -r requirements-demo.txt --no-cache-dir
 ```
 
 (If your git repo is stored in a folder with whitespaces, then don't use the subfolder `.venv`. Use an absolute path without whitespaces.)

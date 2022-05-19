@@ -4,6 +4,8 @@ from .cews import expandshingle
 from typing import Optional, Dict, Union, List
 import numpy as np
 import re
+from .shingleseqs import shingleseqs_k
+import itertools
 
 
 @ray.remote
@@ -157,3 +159,87 @@ def encode_with_patterns_cpu(x: Union[list, str],
     ray.shutdown()
     # done
     return encoded
+
+
+@ray.remote
+def encode_multi_match_str_cpu(x: str,
+                               PATTERNLIST: list,  # List[re.Pattern],
+                               offset: int,
+                               num_matches: Optional[int] = 1,
+                               unkid: Optional[int] = None):
+    """ Encode 1 shingle for `encode_multi_match_corpus` """
+    out = []
+    for i, pat in enumerate(PATTERNLIST):
+        if pat.match(x):
+            out.append(i + offset)
+            if len(out) >= num_matches:
+                break
+    # fill empty list elements
+    for _ in range(num_matches - len(out)):
+        out.append(unkid)
+    return out
+
+
+def encode_multi_match_corpus_cpu(corpus: List[str],
+                                  k: int,
+                                  PATTERNS: list,  # List[re.Pattern],
+                                  num_matches: Optional[int] = 1,
+                                  unkid: Optional[int] = None,
+                                  stack: bool = True):
+    """ Shingle and encode corpus
+
+    Example:
+    --------
+    corpus = ["lenghty text.", "another long article"]
+    encoded, shingled = encode_multi_match_corpus_cpu(
+        corpus, k=k, PATTERNS=PATTERNS, num_matches=3, stack=True)
+    """
+    # generate all shingles (docs, k, seqlen)
+    shingled = [
+        shingleseqs_k(doc, k=k, padding='post', placeholder="[PAD]")
+        for doc in corpus]
+
+    # transpose (docs, seqlen, k)
+    shingled = [
+        np.array(shingled_doc, dtype=object).T.tolist()
+        for shingled_doc in shingled]
+
+    # Start ray.io
+    NUM_CPUS = max(1, int(psutil.cpu_count(logical=True) * 0.9))
+    ray.init(num_cpus=NUM_CPUS)
+    print(f"Num CPUs: {NUM_CPUS}")
+
+    # lookup list for offsets, n=i+1
+    # e.g., [0, 80, 243, 508, 650]
+    offsets = np.cumsum([len(PATTERNS.get(i, [])) for i in range(k)]).tolist()
+
+    # encode (docs, seqlen, k)
+    encoded = []
+    for doc in shingled:
+        encdoc = []
+        for seqpos in doc:
+            encseqpos = []
+            for nkm1, ksegment in enumerate(seqpos):
+                encseqpos.append(encode_multi_match_str_cpu.remote(
+                    ksegment,
+                    PATTERNLIST=PATTERNS.get(nkm1 + 1, []),
+                    offset=offsets[nkm1],
+                    num_matches=min(nkm1 + 1, num_matches),
+                    unkid=unkid))
+            encdoc.append(encseqpos)
+        encoded.append(ray.get(encdoc))
+
+    # stop ray
+    ray.shutdown()
+
+    # flatten (docs, seqlen, k, num) to (docs, seqlen, k*num)
+    encoded = [
+        [list(itertools.chain(*seqpos)) for seqpos in doc]
+        for doc in encoded]
+
+    # merge to one big sequence
+    if stack:
+        encoded = np.vstack(encoded)
+
+    # done
+    return encoded, shingled
