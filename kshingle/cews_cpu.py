@@ -158,7 +158,8 @@ def encode_with_patterns_cpu(x: Union[list, str],
     patterns_ref = ray.put(PATTERNS)
     unkid_ref = ray.put(unkid)
     # encode
-    encoded = ray.get(encode_with_patterns_recur.remote(x, patterns_ref, unkid_ref))
+    encoded = ray.get(encode_with_patterns_recur.remote(
+        x, patterns_ref, unkid_ref))
     # stop ray
     ray.shutdown()
     # done
