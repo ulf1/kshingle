@@ -535,21 +535,21 @@ def encode_multi_match_corpus(corpus: List[str],
     encoded = []
     for doc in shingled:
         encdoc = []
-        for seq in doc:
-            encseq = []
-            for nkm1, ksegment in enumerate(seq):
-                encseq.append(encode_multi_match_str(
+        for seqpos in doc:
+            encseqpos = []
+            for nkm1, ksegment in enumerate(seqpos):
+                encseqpos.append(encode_multi_match_str(
                     ksegment,
                     PATTERNLIST=PATTERNS.get(nkm1 + 1, []),
                     offset=offsets[nkm1],  
                     num_matches=min(nkm1 + 1, num_matches),
                     unkid=unkid))
-            encdoc.append(encseq)
+            encdoc.append(encseqpos)
         encoded.append(encdoc)
 
     # flatten (docs, seqlen, k, num) to (docs, seqlen, k*num)
     encoded = [
-        [list(itertools.chain(*seq)) for seq in doc]
+        [list(itertools.chain(*seqpos)) for seqpos in doc]
         for doc in encoded]
 
     # merge to one big sequence
