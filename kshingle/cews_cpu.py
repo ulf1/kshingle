@@ -154,8 +154,11 @@ def encode_with_patterns_cpu(x: Union[list, str],
     NUM_CPUS = max(1, int(psutil.cpu_count(logical=True) * 0.9))
     ray.init(num_cpus=NUM_CPUS)
     print(f"Num CPUs: {NUM_CPUS}")
+    # shared storage
+    patterns_ref = ray.put(PATTERNS)
+    unkid_ref = ray.put(unkid)
     # encode
-    encoded = ray.get(encode_with_patterns_recur.remote(x, PATTERNS, unkid))
+    encoded = ray.get(encode_with_patterns_recur.remote(x, patterns_ref, unkid_ref))
     # stop ray
     ray.shutdown()
     # done
@@ -208,13 +211,18 @@ def encode_multi_match_corpus_cpu(corpus: List[str],
     # e.g., [0, 80, 243, 508, 650]
     offsets = np.cumsum([len(PATTERNS.get(i, [])) for i in range(k)]).tolist()
 
+    patterns_ref = ray.put(PATTERNS)
+    offsets_ref = ray.put(offsets)
+    num_matches_ref = ray.put(num_matches)
+    unkid_ref = ray.put(unkid)
+
     # encode (docs, seqlen, k)
     encoded = []
     for doc in shingled:
         encdoc = []
         for seqpos in doc:
             encdoc.append(encode_seqpos.remote(
-                seqpos, PATTERNS, offsets, num_matches, unkid))
+                seqpos, patterns_ref, offsets_ref, num_matches_ref, unkid_ref))
         encoded.append(ray.get(encdoc))
 
     # stop ray
