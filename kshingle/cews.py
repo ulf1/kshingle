@@ -486,15 +486,15 @@ def encode_with_patterns(x: Union[list, str],
 
 
 def encode_multi_match_str(x: str,
-                           PATTERNS: dict,  # Dict[int, List[re.Pattern]],
+                           PATTERNLIST: list,  # List[re.Pattern],
+                           offset: int,
                            num_matches: Optional[int] = 1,
                            unkid: Optional[int] = None):
     """ Encode 1 shingle for `encode_multi_match_corpus` """
-    nx = len(x)
     out = []
-    for i, pat in enumerate(PATTERNS.get(nx, [])):
+    for i, pat in enumerate(PATTERNLIST):
         if pat.match(x):
-            out.append(i)
+            out.append(i + offset)
             if len(out) >= num_matches:
                 break
     # fill empty list elements
@@ -528,16 +528,32 @@ def encode_multi_match_corpus(corpus: List[str],
         for shingled_doc in shingled]
 
     # encode (docs, seqlen, k)
-    encoded = [
-        [[encode_multi_match_str(
-            ksegment,
-            PATTERNS=PATTERNS,
-            num_matches=min(nk + 1, num_matches),
-            unkid=unkid)
-          for nk, ksegment in enumerate(seq)]
-         for seq in doc]
-        for doc in shingled
-    ]
+    # encoded = [
+    #     [[encode_multi_match_str(
+    #         ksegment,
+    #         PATTERNS=PATTERNS,
+    #         num_matches=min(nk + 1, num_matches),
+    #         unkid=unkid)
+    #       for nk, ksegment in enumerate(seq)]
+    #      for seq in doc]
+    #     for doc in shingled
+    # ]
+    encoded = []
+    for doc in shingled:
+        encdoc = []
+        for seq in doc:
+            encseq = []
+            offset = 0
+            for nk, ksegment in enumerate(seq):
+                encseq.append(encode_multi_match_str(
+                    ksegment,
+                    PATTERNLIST=PATTERNS.get(nk, []),
+                    offset=offset,
+                    num_matches=min(nk + 1, num_matches),
+                    unkid=unkid))
+                offset += len(PATTERNS.get(nk, []))
+            encdoc.append(encseq)
+        encoded.append(encdoc)
 
     # flatten (docs, seqlen, k, num) to (docs, seqlen, k*num)
     encoded = [
