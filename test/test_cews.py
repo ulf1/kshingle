@@ -146,7 +146,30 @@ def test10():
                           shingled, Counter([]))
     memo = ks.cews(db, threshold=0.8, min_samples_split=10, max_wildcards=2)
     PATTERNS = ks.shingles_to_patterns(memo)
+    unkid = sum([len(pats) for pats in PATTERNS.values()])
     # encode
     encoded, shingled = ks.encode_multi_match_corpus(
-        corpus, k=k, PATTERNS=PATTERNS, num_matches=3, stack=True)
+        corpus, k=k, PATTERNS=PATTERNS, num_matches=3, unkid=unkid, stack=True)
     assert encoded.shape[1] == 3 * k - 3
+
+
+def test11():
+    k = 5
+    text = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam "
+    # generate all shingles
+    shingled = ks.shingleseqs_k(text, k=k)
+    # run CEWS algorithm
+    db = functools.reduce(lambda x, y: x + Counter(itertools.chain(*y)),
+                          shingled, Counter([]))
+    memo = ks.cews(db, threshold=0.8, min_samples_split=10, max_wildcards=2)
+    PATTERNS = ks.shingles_to_patterns(memo)
+    unkid = sum([len(pats) for pats in PATTERNS.values()])
+    # encode
+    encoded, shingled = ks.encode_multi_match_corpus(
+        [text], k=k, PATTERNS=PATTERNS, num_matches=3, unkid=unkid, stack=True)
+    assert encoded.shape[1] == 3 * k - 3
+    # encode
+    encoded2 = ks.encode_multi_match_text(
+        text, k=k, PATTERNS=PATTERNS, num_matches=3, unkid=unkid)
+    assert encoded2.shape == encoded.shape
+    assert (encoded2 == encoded).all()

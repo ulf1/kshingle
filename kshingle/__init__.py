@@ -1,4 +1,4 @@
-__version__ = '0.9.8'
+__version__ = '0.9.9'
 
 from .shingleseqs import (
     shingleseqs_k,
@@ -22,7 +22,8 @@ from .cews import (
     cews,
     shingles_to_patterns,
     encode_with_patterns,
-    encode_multi_match_corpus
+    encode_multi_match_corpus,
+    encode_multi_match_text
 )
 from .cews_cpu import (
     cews_cpu,
