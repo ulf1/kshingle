@@ -4,6 +4,7 @@ import functools
 import numpy as np
 import itertools
 from .shingleseqs import shingleseqs_k
+import copy
 
 
 def select_most_frequent_shingles(matches: List[str],
@@ -558,3 +559,38 @@ def encode_multi_match_corpus(corpus: List[str],
 
     # done
     return encoded, shingled
+
+
+def encode_multi_match_text(text: str,
+                            k: int,
+                            PATTERNS: list,  # List[re.Pattern],
+                            num_matches: Optional[int] = 1,
+                            unkid: Optional[int] = None):
+    """ Encode by directly looking up patterns across the text
+
+    It's approx 20x faster than `encode_multi_match_corpus`
+    """
+    # change to full-text pattern
+    PATTERNS2 = copy.deepcopy(PATTERNS)
+    for n in sorted(PATTERNS2.keys()):
+        for i, pat in enumerate(PATTERNS2.get(n, [])):
+            PATTERNS2[n][i] = re.compile(pat.pattern[1:-1])
+    # encode
+    encoded = [[] for _ in range(len(text))]
+    offset = 0
+    end = 0
+    for n in range(1, k + 1):
+        end += min(n, num_matches)
+        for i, pat in enumerate(PATTERNS2.get(n, [])):
+            for m in re.finditer(pat, text):
+                j = m.start(0)
+                if len(encoded[j]) < end:
+                    encoded[j].append(i + offset)
+        offset += len(PATTERNS2.get(n, []))
+        # fill with unkid
+        for j in range(len(encoded)):
+            num = len(encoded[j])
+            for _ in range(end - num):
+                encoded[j].append(unkid)
+    # done
+    return np.array(encoded)

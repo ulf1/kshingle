@@ -110,3 +110,4 @@ profile/data*
 .theia
 README.rst
 demo
+.DS_Store

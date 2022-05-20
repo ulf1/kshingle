@@ -16,7 +16,7 @@ The package `kshingle` can be deployed for the following use cases:
 ## Install package
 
 ```sh
-pip install "kshingle>=0.9.5"
+pip install "kshingle>=0.9.9"
 ```
 
 
@@ -331,8 +331,12 @@ Finally, we can start to encode data
 
 ```py
 # Encode data
-encoded, shingled = ks.encode_multi_match_corpus(
-    [text], k=5, PATTERNS=PATTERNS, num_matches=3, unkid=unkid)
+encoded, shingled = ks.encode_multi_match_test(
+    text, k=5, PATTERNS=PATTERNS, num_matches=3, unkid=unkid)
+
+# is slower
+# encoded, shingled = ks.encode_multi_match_corpus(
+#     [text], k=5, PATTERNS=PATTERNS, num_matches=3, unkid=unkid)
 ```
 
 
