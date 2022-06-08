@@ -620,7 +620,7 @@ def encode_multi_match_batch(batch: List[str],
     encbatch = []
     for i in range(len(strend) - 1):
         # slice subsequence
-        enc = encall[strend[i] : strend[i + 1] - k]
+        enc = encall[strend[i]: strend[i + 1] - k]
         # truncate & pad
         h = np.ones(shape=(seqlen, enc.shape[1]), dtype=np.int64) * padid
         end = min(enc.shape[0], seqlen)
