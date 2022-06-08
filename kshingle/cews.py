@@ -594,3 +594,37 @@ def encode_multi_match_text(text: str,
                 encoded[j].append(unkid)
     # done
     return np.array(encoded)
+
+
+def encode_multi_match_batch(batch: List[str],
+                             k: int,
+                             PATTERNS,
+                             num_matches: int,
+                             unkid: int,
+                             seqlen: int,
+                             padid: int):
+    # get positions to split the string lateron
+    strend = [0]
+    for s in batch:
+        strend.append(strend[-1] + len(s) + k)
+    # merge all strings into one big string
+    combtext = ("-" * k).join(batch)
+    # encode string
+    encall = encode_multi_match_text(
+        combtext,
+        k=k,
+        PATTERNS=PATTERNS,
+        num_matches=num_matches,
+        unkid=unkid)
+    # split encoded string into subsequences
+    encbatch = []
+    for i in range(len(strend) - 1):
+        # slice subsequence
+        enc = encall[strend[i]: strend[i + 1] - k]
+        # truncate & pad
+        h = np.ones(shape=(seqlen, enc.shape[1]), dtype=np.int64) * padid
+        end = min(enc.shape[0], seqlen)
+        h[:end, :] = enc[:end, :]
+        encbatch.append(h)
+    # done
+    return encbatch

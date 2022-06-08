@@ -331,7 +331,7 @@ Finally, we can start to encode data
 
 ```py
 # Encode data
-encoded, shingled = ks.encode_multi_match_test(
+encoded, shingled = ks.encode_multi_match_text(
     text, k=5, PATTERNS=PATTERNS, num_matches=3, unkid=unkid)
 
 # is slower
