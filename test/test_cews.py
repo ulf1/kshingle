@@ -3,6 +3,7 @@ import pytest
 import functools
 import itertools
 from collections import Counter
+import re
 
 
 def test1():
@@ -173,3 +174,31 @@ def test11():
         text, k=k, PATTERNS=PATTERNS, num_matches=3, unkid=unkid)
     assert encoded2.shape == encoded.shape
     assert (encoded2 == encoded).all()
+
+
+def test12():
+    k = 5
+    corpus = [
+        "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam ",
+        "nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam ",
+        "erat, sed diam voluptua. At vero eos et accusam et justo duo ",
+        "dolores et ea rebum. Stet clita kasd gubergren, no sea takimata "]
+    # generate all shingles
+    shingled = [ks.shingleseqs_k(doc, k=k) for doc in corpus]
+    assert len(shingled) == len(corpus)
+    assert len(shingled[0]) == k
+    # run CEWS algorithm
+    db = functools.reduce(lambda x, y: x + Counter(itertools.chain(*y)),
+                          shingled, Counter([]))
+    memo = ks.cews(db, threshold=0.8, min_samples_split=10, max_wildcards=2)
+    PATTERNS = ks.shingles_to_patterns(memo)
+    unkid = sum([len(pats) for pats in PATTERNS.values()])
+    PATTERNS[1].append(re.compile(r"^[UNK]$"))
+    padid = sum([len(pats) for pats in PATTERNS.values()])
+    PATTERNS[1].append(re.compile(r"^[PAD]$"))
+    # encode
+    encbatch = ks.encode_multi_match_batch(
+        corpus, k=k, PATTERNS=PATTERNS, num_matches=3,
+        unkid=unkid, seqlen=32, padid=padid)
+    assert encbatch[0].shape[1] == 3 * k - 3
+    assert encbatch[0].shape[0] == 32
