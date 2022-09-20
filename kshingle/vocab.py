@@ -190,13 +190,3 @@ def shrink_k_backwards(encoded: List[List[int]], unkid: int) -> List[int]:
         if not all([all([elem == unkid for elem in ex[j]]) for ex in encoded]):
             klist.append(j + 1)
     return klist
-
-
-def encoded_with_vocab(x: Union[list, str],
-                       VOCAB: List[str],
-                       unkid: int) -> Union[list, int]:
-    warnings.warn((
-        "kshingle.encode_with_vocab will be removed in version '0.8.0'."
-        " Please use kshingle.encode_with_vocab instead."
-    ), DeprecationWarning, stacklevel=2)
-    return encode_with_vocab(x, VOCAB, unkid)
