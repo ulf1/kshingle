@@ -30,7 +30,6 @@ setup(name='kshingle',
       install_requires=[
           'numpy>=1.19.0,<2',
           'numba>=0.52.0',
-          'ray>=1.11.0,<2', 'protobuf<=3.20.*', 'psutil>=5.9.0,<6'
       ],
       python_requires='>=3.6',
       zip_safe=True)

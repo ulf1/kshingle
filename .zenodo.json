@@ -4,7 +4,7 @@
     "orcid": "0000-0002-0440-4868"
   }],
   "title": "kshingle: Shingling text data",
-  "description": "Split strings into (character-based) k-shingles",
+  "description": "Split strings into character-based k-shingles",
   "license": "Apache-2.0",
   "upload_type": "software",
   "keywords": [
