@@ -1,3 +1,4 @@
 # public packages (see setup.py)
 numba>=0.52.0,<1
-numpy>=1.19.0,<2
+numpy>=1.22.2,<2
+setuptools>=65.5.1 # not directly required, pinned by Snyk to avoid a vulnerability
