@@ -1,7 +1,7 @@
 # syntax check, unit test, profiling
-setuptools>=56.0.0
+setuptools>=65.5.1
 flake8>=3.8.4
 pytest>=6.2.1
 twine==3.3.0
 pypandoc>=1.5
-wheel>=0.31.0
+wheel>=0.38.0
