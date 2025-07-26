@@ -27,21 +27,22 @@ jobs:
         python-version: ${{ matrix.python-version }}
         architecture: x64
 
-    - name: Cache pip
+    - name: Cache packages
       uses: actions/cache@v4.2.3
       with:
         path: |
           ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('setup.py', 'requirements.txt', 'requirements-dev.txt', 'pyproject.toml') }}
+          ~/.cache/uv
+        key: ${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('setup.py', 'requirements.txt', 'requirements-dev.txt', 'pyproject.toml') }}
         restore-keys: |
-          ${{ runner.os }}-pip-${{ matrix.python-version }}-
-          ${{ runner.os }}-pip-
+          ${{ runner.os }}-${{ matrix.python-version }}-
+          ${{ runner.os }}-
 
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install -r requirements-dev.txt
+        pip install uv
+        uv pip install -r requirements.txt
+        uv pip install -r requirements-dev.txt
 
     - name: Lint with flake8
       run: |
