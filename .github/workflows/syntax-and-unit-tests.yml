@@ -42,7 +42,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install -r requirements-dev.txt
-        pip install pytest-html pytest-cov
 
     - name: Lint with flake8
       run: |
@@ -50,7 +49,7 @@ jobs:
 
     - name: Unit Test with pytest
       run: |
-        pytest --junitxml=test-results-${{ matrix.os }}-${{ matrix.python-version }}.xml --html=test-report.html --self-contained-html --cov --cov-report=xml --cov-report=term-missing
+        pytest --junitxml=test-results-${{ matrix.os }}-${{ matrix.python-version }}.xml --cov --cov-report=xml --cov-report=term-missing
       continue-on-error: true
 
     - name: Test Report
