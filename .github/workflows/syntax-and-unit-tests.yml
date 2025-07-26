@@ -2,14 +2,18 @@ name: Test
 
 on: [push, workflow_dispatch]
 
+permissions:
+  contents: read
+  actions: read
+  checks: write
+
 jobs:
   build:
-
     runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
-        os: ['ubuntu-18.04', 'ubuntu-18.10', 'ubuntu-latest', 'windows-latest']
+        os: ['ubuntu-18.10', 'ubuntu-latest', 'windows-latest']
         python-version: ['3.10', '3.11', '3.12', '3.13']
 
     name: ${{ matrix.os }} ${{ matrix.python-version }} Tests
@@ -38,6 +42,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install -r requirements-dev.txt
+        pip install pytest-html pytest-cov
 
     - name: Lint with flake8
       run: |
@@ -45,4 +50,29 @@ jobs:
 
     - name: Unit Test with pytest
       run: |
-        pytest
+        pytest --junitxml=test-results-${{ matrix.os }}-${{ matrix.python-version }}.xml --html=test-report.html --self-contained-html --cov --cov-report=xml --cov-report=term-missing
+      continue-on-error: true
+
+    - name: Test Report
+      uses: dorny/test-reporter@v2
+      if: ${{ !cancelled() }}
+      with:
+        name: 'Pytest Results (${{ matrix.os }}, Python ${{ matrix.python-version }})'
+        path: 'test-results-${{ matrix.os }}-${{ matrix.python-version }}.xml'
+        reporter: 'java-junit'
+        fail-on-error: true
+        fail-on-empty: true
+        max-annotations: 128
+        list-suites: 'failed'
+        list-tests: 'failed'
+
+    - name: Upload test artifacts
+      uses: actions/upload-artifact@v4
+      if: ${{ !cancelled() }}
+      with:
+        name: test-artifacts-${{ matrix.os }}-${{ matrix.python-version }}
+        path: |
+          test-results-${{ matrix.os }}-${{ matrix.python-version }}.xml
+          test-report.html
+          coverage.xml
+        retention-days: 30
