@@ -62,9 +62,7 @@ jobs:
         reporter: 'java-junit'
         fail-on-error: true
         fail-on-empty: true
-        max-annotations: 128
-        list-suites: 'failed'
-        list-tests: 'failed'
+        max-annotations: 50
 
     - name: Upload test artifacts
       uses: actions/upload-artifact@v4
