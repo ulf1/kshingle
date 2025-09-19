@@ -33,7 +33,7 @@ shingles = ks.shingleset_k("abc", k=3)
 ```py
 import kshingle as ks
 shingles = ks.shingleset_range("abc", 2, 3)
-# {'ab', 'abc', 'bc', 'c'}
+# {'ab', 'abc', 'bc'}
 ```
 
 ```py
